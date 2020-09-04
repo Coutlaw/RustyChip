@@ -1,5 +1,9 @@
 struct OpCode {
-    pub operations: Operations,
+    // processed opcodes
+    pub op_1: usize,
+    pub op_2: usize,
+    pub op_3: usize,
+    pub op_4: usize,
 
     // operation code variables
     pub nnn: usize,
@@ -7,23 +11,6 @@ struct OpCode {
     pub x: usize,
     pub y: usize,
     pub n: usize,
-}
-
-struct Operations {
-    // 4 decoded ops from the word
-    pub op_1: usize,
-    pub op_2: usize,
-    pub op_3: usize,
-    pub op_4: usize,
-}
-
-impl Operations {
-    fn parse_operations(&mut self, opcode: u16) {
-        self.op_1 = ((opcode & 0xF000) >> 12) as u8;
-        self.op_2 = ((opcode & 0x0F00) >> 8)as u8;
-        self.op_3 = ((opcode & 0x00F0) >> 4)as u8;
-        self.op_4 = (opcode & 0x000F) as u8;
-    }
 }
 
 impl OpCode {
@@ -46,8 +33,11 @@ impl OpCode {
         // kk or byte - An 8-bit value, the lowest 8 bits of the instruction
         self.kk = (opcode & 0x00FF) as u8;
 
-        // extract the smaller nibbles
-        self.operations = Operations::parse_operations(op_code);
+        // extract the op code nibbles
+        self.op_1 = ((opcode & 0xF000) >> 12) as u8;
+        self.op_2 = ((opcode & 0x0F00) >> 8)as u8;
+        self.op_3 = ((opcode & 0x00F0) >> 4)as u8;
+        self.op_4 = (opcode & 0x000F) as u8;
         
         self;
     }

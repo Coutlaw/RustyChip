@@ -1,11 +1,5 @@
 use op_code::{OpCode, Operations};
 
-enum ProgramCounter {
-    Next,
-    Skip,
-    Jump(usize),
-}
-
 pub struct Cpu {
     // index 16 bit register
     pub i: u16,
@@ -80,12 +74,47 @@ impl Cpu {
     }
 
     fn handle_opcode(&mut self, opcode: u16) {
-        let operation = OpCode::parse_op_codes_from_word(op_code);
+        let OpCode { op_1, op_2, op_3, op_4, nnn, x, kk, y, n } = OpCode::parse_op_codes_from_word(op_code);
 
-        // TODO: match opcodes to instructions
-        match operation.operations {
-            Operations{ op_1: 0, op_2: 0, op_3: 0xE, op_4: 0} => println!("clear screen"),
-            _ => println!("not implemented"),
+        self.pc += 2;
+
+        // match opcodes to a function that updates the CPU state
+        match (op_1, op_2, op_3, op_4) {
+            (0x00, 0x00, 0x0E, 0x00) => self.op_00e0(),
+            (0x00, 0x00, 0x0E, 0x0E) => self.op_00ee(),
+            (0x01, _, _, _) => self.op_1nnn(nnn),
+            (0x02, _, _, _) => self.op_2nnn(nnn),
+            (0x03, _, _, _) => self.op_3xkk(x, kk),
+            (0x04, _, _, _) => self.op_4xkk(x, kk),
+            (0x05, _, _, 0x00) => self.op_5xy0(x, y),
+            (0x06, _, _, _) => self.op_6xkk(x, kk),
+            (0x07, _, _, _) => self.op_7xkk(x, kk),
+            (0x08, _, _, 0x00) => self.op_8xy0(x, y),
+            (0x08, _, _, 0x01) => self.op_8xy1(x, y),
+            (0x08, _, _, 0x02) => self.op_8xy2(x, y),
+            (0x08, _, _, 0x03) => self.op_8xy3(x, y),
+            (0x08, _, _, 0x04) => self.op_8xy4(x, y),
+            (0x08, _, _, 0x05) => self.op_8xy5(x, y),
+            (0x08, _, _, 0x06) => self.op_8x06(x),
+            (0x08, _, _, 0x07) => self.op_8xy7(x, y),
+            (0x08, _, _, 0x0E) => self.op_8x0e(x),
+            (0x09, _, _, 0x00) => self.op_9xy0(x, y),
+            (0x0A, _, _, _) => self.op_annn(nnn),
+            (0x0B, _, _, _) => self.op_bnnn(nnn),
+            (0x0C, _, _, _) => self.op_cxkk(x, kk),
+            (0x0D, _, _, _) => self.op_dxyn(x, y, n),
+            (0x0E, _, 0x09, 0x0E) => self.op_ex9e(x),
+            (0x0E, _, 0x0a, 0x01) => self.op_exa1(x),
+            (0x0F, _, 0x00, 0x07) => self.op_fx07(x),
+            (0x0F, _, 0x00, 0x0A) => self.op_fx0a(x),
+            (0x0F, _, 0x01, 0x05) => self.op_fx15(x),
+            (0x0F, _, 0x01, 0x08) => self.op_fx18(x),
+            (0x0F, _, 0x01, 0x0e) => self.op_fx1e(x),
+            (0x0F, _, 0x02, 0x09) => self.op_fx29(x),
+            (0x0F, _, 0x03, 0x03) => self.op_fx33(x),
+            (0x0F, _, 0x05, 0x05) => self.op_fx55(x),
+            (0x0F, _, 0x06, 0x05) => self.op_fx65(x),
+            _ => (),
         }
 
     }
