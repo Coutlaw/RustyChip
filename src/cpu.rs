@@ -1,3 +1,11 @@
+use op_code::{OpCode, Operations};
+
+enum ProgramCounter {
+    Next,
+    Skip,
+    Jump(usize),
+}
+
 pub struct Cpu {
     // index 16 bit register
     pub i: u16,
@@ -62,7 +70,7 @@ impl Cpu {
 
     pub fn execute_cycle(&mut self) {
         let opcode = read_word(self.memory, self.pc);
-        self.process_opcode(opcode);
+        self.handle_opcode(opcode);
     }
 
     pub fn decrement_timers(&mut self) {
@@ -71,34 +79,14 @@ impl Cpu {
         }
     }
 
-    fn process_opcode(&mut self, opcode: u16) {
-
-        // opcode params
-        // take the op code, mask its position, shift to the 0th place of the instruction
-
-        // x - A 4-bit value, the lower 4 bits of the high byte of the instruction
-        let x = ((opcode & 0x0F00) >> 8) as usize;
-
-        // y - A 4-bit value, the upper 4 bits of the low byte of the instruction
-        let y = ((opcode & 0x00F0) >> 4) as usize;
-
-        // nnn or addr - A 12-bit value, the lowest 12 bits of the instruction
-        let nnn = (opcode & 0x0FFF);
-
-        // n or nibble - A 4-bit value, the lowest 4 bits of the instruction
-        let n = ((opcode & 0x000F)) as u8;
-
-        // kk or byte - An 8-bit value, the lowest 8 bits of the instruction
-        let kk = (opcode & 0x00FF) as u8;
-
-        // extract the smaller nibbles
-        let op_1 = ((opcode & 0xF000) >> 12) as u8;
-        let op_2 = ((opcode & 0x0F00) >> 8)as u8;
-        let op_3 = ((opcode & 0x00F0) >> 4)as u8;
-        let op_4 = (opcode & 0x000F) as u8;
+    fn handle_opcode(&mut self, opcode: u16) {
+        let operation = OpCode::parse_op_codes_from_word(op_code);
 
         // TODO: match opcodes to instructions
-
+        match operation.operations {
+            Operations{ op_1: 0, op_2: 0, op_3: 0xE, op_4: 0} => println!("clear screen"),
+            _ => println!("not implemented"),
+        }
 
     }
 }
