@@ -116,6 +116,23 @@ impl Cpu {
             (0x0F, _, 0x06, 0x05) => self.op_fx65(x),
             _ => (),
         }
+    }
 
+    // RET
+    fn op_00ee(&mut self) {
+        self.sp = self.sp - 1;
+        self.pc = self.stack[self.sp as usize];
+    }
+
+    // Jp
+    fn op_1nnn(&mut self, nnn: usize) {
+        self.pc = nnn;
+    }
+
+    // CALL
+    fn op_2nnn(&mut self, nnn: usize) {
+        self.stack[self.sp as uzise] = self.pc;
+        self.sp = self.sp + 1;
+        self.pc = nnn;
     }
 }
