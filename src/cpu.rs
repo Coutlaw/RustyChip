@@ -135,4 +135,9 @@ impl Cpu {
         self.sp = self.sp + 1;
         self.pc = nnn;
     }
+
+    // SE Vx KK
+    fn op_3xkk(&mut self, x: usize, kk: usize) {
+        self.pc += if self.v[x] == kk { 2 } else { 0 };
+    }
 }
