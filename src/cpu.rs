@@ -138,6 +138,11 @@ impl Cpu {
 
     // SE Vx KK
     fn op_3xkk(&mut self, x: usize, kk: usize) {
-        self.pc += if self.v[x] == kk { 2 } else { 0 };
+        if self.v[x] == kk { self.pc += 2 }
+    }
+
+    // SNE Vx kk
+    fn 4xkk(&mut self, x: usize, kk: usize) {
+        if self.v[x] != kk { self.pc += 2 }
     }
 }
