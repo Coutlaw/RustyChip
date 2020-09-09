@@ -142,12 +142,12 @@ impl Cpu {
     }
 
     // SNE Vx kk
-    fn 4xkk(&mut self, x: usize, kk: usize) {
+    fn op_4xkk(&mut self, x: usize, kk: usize) {
         if self.v[x] != kk { self.pc += 2 };
     }
 
     // SE Vx Vy
-    fn 5xy0(&mut self, x: usize, y: usize) {
+    fn op_5xy0(&mut self, x: usize, y: usize) {
 
-    }dasf
+    }
 }
