@@ -1,4 +1,4 @@
-**What is a chip-8?**
+# What is Chip-8
 
 It essentially a virtual machine to make the development of games easier.
 
