@@ -1,4 +1,4 @@
-struct OpCode {
+pub struct OpCode {
     // processed opcodes
     pub op_1: usize,
     pub op_2: usize,
@@ -76,8 +76,9 @@ impl Cpu {
             pc: 0,
             memory: [0; 4096],
             v: [0; 16],
-            display: Display::new(),
-            keypad: Keypad::new(),
+            // TODO: fix
+            // display: Display::new(),
+            // keypad: Keypad::new(),
             stack: [0; 16],
             sp: 0,
             dt: 0,
@@ -92,27 +93,31 @@ impl Cpu {
         self.stack = [0; 16];
         self.sp = 0;
         self.dt = 0;
-        self.rand = ComplementaryMultiplyWithCarryGen::new(1);
-        self.display.cls();
-        for i in 0..80 {
-            self.memory[i] = FONT_SET[i];
-        }
+        //self.rand = ComplementaryMultiplyWithCarryGen::new(1);
+        // TODO: impl display
+        //self.display.cls();
+        // for i in 0..80 {
+        //     self.memory[i] = FONT_SET[i];
+        // }
     }
 
     pub fn execute_cycle(&mut self) {
-        let opcode = self.read_word(self.memory, self.pc);
+        let opcode = self.read_word();
         self.handle_opcode(opcode);
+
+        // Increment the PC by two 8 bit ops, or 1 word
+        self.pc += 2;
     }
 
-    fn decrement_timers(&mut self) {
-        if self.dt > 0 {
-            self.dt -= 1;
-        }
-    }
+    // fn decrement_timers(&mut self) {
+    //     if self.dt > 0 {
+    //         self.dt -= 1;
+    //     }
+    // }
 
     // a word is 16 bits, so we combine two 8 bit chunks of memory to form one word
-    fn read_word(memory: [u8; 4096], index: u16) -> u16 {
-        (memory[index as usize] as u16) << 8 | (memory[(index + 1) as usize] as u16)
+    fn read_word(&mut self) -> u16 {
+        (self.memory[self.pc as usize] as u16) << 8 | (self.memory[(self.pc + 1) as usize] as u16)
     }
 
     fn handle_opcode(&mut self, opcode: u16) {
@@ -154,15 +159,13 @@ impl Cpu {
             // (0x0F, _, 0x03, 0x03) => self.op_fx33(x),
             // (0x0F, _, 0x05, 0x05) => self.op_fx55(x),
             // (0x0F, _, 0x06, 0x05) => self.op_fx65(x),
-            _ => (),
+            _ => (println!("not implemented instruction")),
         }
-
-        // Increment the PC by two 8 bit ops, or 1 word
-        self.pc += 2;
     }
+
     // SYS
     fn op_00e0(&mut self) {
-
+        println!("attempted to use 0nnn, this is ignored on modern interpretes")
     }
 
     // RET
@@ -194,19 +197,19 @@ impl Cpu {
     }
 
     // SE Vx Vy
-    fn op_5xy0(&mut self, x: usize, y: usize) {
+    // fn op_5xy0(&mut self, x: usize, y: usize) {
 
-    }
+    // }
 }
 
 #[cfg(test)]
 mod tests {
-    //use super::*;
-
-    static chip: Cpu = Cpu::new();
+    use super::*;
 
     #[test]
-    fn ret_test(){
-        assert_eq!(true, true);
+    fn opcode_jp(){
+        let mut chip: Cpu = Cpu::new();
+        chip.handle_opcode(0x1A2A);
+        assert_eq!(chip.pc, 0x0A2A, "program counter was updated");
     }
 }
