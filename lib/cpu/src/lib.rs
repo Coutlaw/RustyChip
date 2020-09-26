@@ -149,7 +149,7 @@ impl Cpu {
             // (0x0C, _, _, _) => self.op_cxkk(x, kk),
             // (0x0D, _, _, _) => self.op_dxyn(x, y, n),
             // (0x0E, _, 0x09, 0x0E) => self.op_ex9e(x),
-            // (0x0E, _, 0x0a, 0x01) => self.op_exa1(x),
+            // (0x0E, _, 0x0A, 0x01) => self.op_exa1(x),
             // (0x0F, _, 0x00, 0x07) => self.op_fx07(x),
             // (0x0F, _, 0x00, 0x0A) => self.op_fx0a(x),
             // (0x0F, _, 0x01, 0x05) => self.op_fx15(x),
@@ -209,7 +209,7 @@ mod tests {
     #[test]
     fn opcode_jp(){
         let mut chip: Cpu = Cpu::new();
-        chip.handle_opcode(0x1A2A);
-        assert_eq!(chip.pc, 0x0A2A, "program counter was updated");
+        chip.handle_opcode(0x1A2B);
+        assert_eq!(chip.pc, 0x0A2B, "program counter was updated");
     }
 }
