@@ -165,7 +165,7 @@ impl Cpu {
 
     // SYS
     fn op_00e0(&mut self) {
-        println!("attempted to use 0nnn, this is ignored on modern interpretes")
+        println!("attempted to use 0nnn, this is ignored on modern interpreters")
     }
 
     // RET
@@ -211,5 +211,16 @@ mod tests {
         let mut chip: Cpu = Cpu::new();
         chip.handle_opcode(0x1A2B);
         assert_eq!(chip.pc, 0x0A2B, "program counter was updated");
+    }
+
+    #[test]
+    fn opcode_ret(){
+        let mut chip: Cpu = Cpu::new();
+        chip.sp += 1;
+        chip.stack[0] = 1234;
+
+        chip.handle_opcode(0x00EE);
+        assert_eq!(chip.sp, 0x0000, "stack pointer was updated");
+        assert_eq!(chip.pc, 1234, "stack pointer was updated");
     }
 }
