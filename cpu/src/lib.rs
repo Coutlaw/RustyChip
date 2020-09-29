@@ -221,6 +221,22 @@ mod tests {
 
         chip.handle_opcode(0x00EE);
         assert_eq!(chip.sp, 0x0000, "stack pointer was updated");
-        assert_eq!(chip.pc, 1234, "stack pointer was updated");
+        assert_eq!(chip.pc, 1234, "program counter was updated");
+    }
+
+    #[test]
+    fn opcode_2nnn(){
+        let opcode = 0x2123;
+        let mut chip: Cpu = Cpu::new();
+        chip.pc += 10;
+        chip.sp += 1;
+        chip.stack[10] = 1234;
+
+        let nnn = (opcode & 0x0FFF) as usize;
+
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.stack[1], 10, "stack was updated");
+        assert_eq!(chip.sp, 2, "stack pointer was updated");
+        assert_eq!(chip.pc, nnn as u16, "program counter was updated");
     }
 }
