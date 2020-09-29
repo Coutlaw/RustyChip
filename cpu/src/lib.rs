@@ -135,7 +135,7 @@ impl Cpu {
             (0x06, _, _, _) => self.op_6xkk(op_chunks.x, op_chunks.kk),
             (0x07, _, _, _) => self.op_7xkk(op_chunks.x, op_chunks.kk),
             (0x08, _, _, 0x00) => self.op_8xy0(op_chunks.x, op_chunks.y),
-            // (0x08, _, _, 0x01) => self.op_8xy1(op_chunks.x, op_chunks.y),
+            (0x08, _, _, 0x01) => self.op_8xy1(op_chunks.x, op_chunks.y),
             // (0x08, _, _, 0x02) => self.op_8xy2(op_chunks.x, op_chunks.y),
             // (0x08, _, _, 0x03) => self.op_8xy3(op_chunks.x, op_chunks.y),
             // (0x08, _, _, 0x04) => self.op_8xy4(op_chunks.x, op_chunks.y),
@@ -214,6 +214,11 @@ impl Cpu {
     // LD Vx, Vy
     fn op_8xy0(&mut self, x: usize, y: usize) {
         self.v[x] = self.v[y];
+    }
+
+    // OR Vx, Vy
+    fn op_8xy1(&mut self, x: usize, y: usize) {
+        self.v[x] = self.v[x] | self.v[y];
     }
 
 }
