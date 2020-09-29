@@ -225,6 +225,11 @@ impl Cpu {
     fn op_8xy2(&mut self, x: usize, y: usize) {
         self.v[x] = self.v[x] & self.v[y];
     }
+
+    // XOR Vx, Vy
+    fn op_8xy3(&mut self, x: usize, y: usize) {
+        self.v[x] = self.v[x] ^ self.v[y];
+    }
 }
 
 #[cfg(test)]
