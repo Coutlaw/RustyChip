@@ -55,6 +55,9 @@ pub struct Cpu {
     // registers
     pub v: [u8; 16],
 
+    // flag register
+    pub vf: bool,
+
     // peripherals
     // pub keypad: Keypad,
     // pub display: Display,
@@ -138,7 +141,7 @@ impl Cpu {
             (0x08, _, _, 0x01) => self.op_8xy1(op_chunks.x, op_chunks.y),
             (0x08, _, _, 0x02) => self.op_8xy2(op_chunks.x, op_chunks.y),
             (0x08, _, _, 0x03) => self.op_8xy3(op_chunks.x, op_chunks.y),
-            // (0x08, _, _, 0x04) => self.op_8xy4(op_chunks.x, op_chunks.y),
+            (0x08, _, _, 0x04) => self.op_8xy4(op_chunks.x, op_chunks.y),
             // (0x08, _, _, 0x05) => self.op_8xy5(op_chunks.x, op_chunks.y),
             // (0x08, _, _, 0x06) => self.op_8x06(op_chunks.x),
             // (0x08, _, _, 0x07) => self.op_8xy7(op_chunks.x, op_chunks.y),
@@ -229,6 +232,11 @@ impl Cpu {
     // XOR Vx, Vy
     fn op_8xy3(&mut self, x: usize, y: usize) {
         self.v[x] = self.v[x] ^ self.v[y];
+    }
+
+    // ADD Vx, Vy
+    fn op_8xy4(&mut self, x: usize, y: usize) {
+        self.v[x] = 
     }
 }
 
