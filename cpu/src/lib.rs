@@ -131,34 +131,34 @@ impl Cpu {
             (0x02, _, _, _) => self.op_2nnn(op_chunks.nnn),
             (0x03, _, _, _) => self.op_3xkk(op_chunks.x, op_chunks.kk),
             (0x04, _, _, _) => self.op_4xkk(op_chunks.x,op_chunks.kk),
-            // (0x05, _, _, 0x00) => self.op_5xy0(x, y),
-            // (0x06, _, _, _) => self.op_6xkk(x, kk),
-            // (0x07, _, _, _) => self.op_7xkk(x, kk),
-            // (0x08, _, _, 0x00) => self.op_8xy0(x, y),
-            // (0x08, _, _, 0x01) => self.op_8xy1(x, y),
-            // (0x08, _, _, 0x02) => self.op_8xy2(x, y),
-            // (0x08, _, _, 0x03) => self.op_8xy3(x, y),
-            // (0x08, _, _, 0x04) => self.op_8xy4(x, y),
-            // (0x08, _, _, 0x05) => self.op_8xy5(x, y),
-            // (0x08, _, _, 0x06) => self.op_8x06(x),
-            // (0x08, _, _, 0x07) => self.op_8xy7(x, y),
-            // (0x08, _, _, 0x0E) => self.op_8x0e(x),
-            // (0x09, _, _, 0x00) => self.op_9xy0(x, y),
-            // (0x0A, _, _, _) => self.op_annn(nnn),
-            // (0x0B, _, _, _) => self.op_bnnn(nnn),
-            // (0x0C, _, _, _) => self.op_cxkk(x, kk),
-            // (0x0D, _, _, _) => self.op_dxyn(x, y, n),
-            // (0x0E, _, 0x09, 0x0E) => self.op_ex9e(x),
-            // (0x0E, _, 0x0A, 0x01) => self.op_exa1(x),
-            // (0x0F, _, 0x00, 0x07) => self.op_fx07(x),
-            // (0x0F, _, 0x00, 0x0A) => self.op_fx0a(x),
-            // (0x0F, _, 0x01, 0x05) => self.op_fx15(x),
-            // (0x0F, _, 0x01, 0x08) => self.op_fx18(x),
-            // (0x0F, _, 0x01, 0x0e) => self.op_fx1e(x),
-            // (0x0F, _, 0x02, 0x09) => self.op_fx29(x),
-            // (0x0F, _, 0x03, 0x03) => self.op_fx33(x),
-            // (0x0F, _, 0x05, 0x05) => self.op_fx55(x),
-            // (0x0F, _, 0x06, 0x05) => self.op_fx65(x),
+            (0x05, _, _, 0x00) => self.op_5xy0(op_chunks.x, op_chunks.y),
+            // (0x06, _, _, _) => self.op_6xkk(op_chunks.x, op_chunks.kk),
+            // (0x07, _, _, _) => self.op_7xkk(op_chunks.x, op_chunks.kk),
+            // (0x08, _, _, 0x00) => self.op_8xy0(op_chunks.x, op_chunks.y),
+            // (0x08, _, _, 0x01) => self.op_8xy1(op_chunks.x, op_chunks.y),
+            // (0x08, _, _, 0x02) => self.op_8xy2(op_chunks.x, op_chunks.y),
+            // (0x08, _, _, 0x03) => self.op_8xy3(op_chunks.x, op_chunks.y),
+            // (0x08, _, _, 0x04) => self.op_8xy4(op_chunks.x, op_chunks.y),
+            // (0x08, _, _, 0x05) => self.op_8xy5(op_chunks.x, op_chunks.y),
+            // (0x08, _, _, 0x06) => self.op_8x06(op_chunks.x),
+            // (0x08, _, _, 0x07) => self.op_8xy7(op_chunks.x, op_chunks.y),
+            // (0x08, _, _, 0x0E) => self.op_8x0e(op_chunks.x),
+            // (0x09, _, _, 0x00) => self.op_9xy0(op_chunks.x, op_chunks.y),
+            // (0x0A, _, _, _) => self.op_annn(op_chunks.nnn),
+            // (0x0B, _, _, _) => self.op_bnnn(op_chunks.nnn),
+            // (0x0C, _, _, _) => self.op_cxkk(op_chunks.x, op_chunks.kk),
+            // (0x0D, _, _, _) => self.op_dxyn(op_chunks.x, op_chunks.y, op_chunks.n),
+            // (0x0E, _, 0x09, 0x0E) => self.op_ex9e(op_chunks.x),
+            // (0x0E, _, 0x0A, 0x01) => self.op_exa1(op_chunks.x),
+            // (0x0F, _, 0x00, 0x07) => self.op_fx07(op_chunks.x),
+            // (0x0F, _, 0x00, 0x0A) => self.op_fx0a(op_chunks.x),
+            // (0x0F, _, 0x01, 0x05) => self.op_fx15(op_chunks.x),
+            // (0x0F, _, 0x01, 0x08) => self.op_fx18(op_chunks.x),
+            // (0x0F, _, 0x01, 0x0e) => self.op_fx1e(op_chunks.x),
+            // (0x0F, _, 0x02, 0x09) => self.op_fx29(op_chunks.x),
+            // (0x0F, _, 0x03, 0x03) => self.op_fx33(op_chunks.x),
+            // (0x0F, _, 0x05, 0x05) => self.op_fx55(op_chunks.x),
+            // (0x0F, _, 0x06, 0x05) => self.op_fx65(op_chunks.x),
             _ => (println!("not implemented instruction")),
         }
     }
@@ -197,9 +197,9 @@ impl Cpu {
     }
 
     // SE Vx Vy
-    // fn op_5xy0(&mut self, x: usize, y: usize) {
-
-    // }
+    fn op_5xy0(&mut self, x: usize, y: usize) {
+        if self.v[x] == self.v[y] { self.pc += 2 };
+    }
 }
 
 #[cfg(test)]
@@ -227,16 +227,15 @@ mod tests {
     #[test]
     fn opcode_2nnn(){
         let opcode = 0x2123;
+        let nnn = (opcode & 0x0FFF) as u16;
         let mut chip: Cpu = Cpu::new();
         chip.pc += 10;
         chip.sp += 1;
         chip.stack[10] = 1234;
 
-        let nnn = (opcode & 0x0FFF) as usize;
-
         chip.handle_opcode(opcode);
         assert_eq!(chip.stack[1], 10, "stack was updated");
         assert_eq!(chip.sp, 2, "stack pointer was updated");
-        assert_eq!(chip.pc, nnn as u16, "program counter was updated");
+        assert_eq!(chip.pc, nnn, "program counter was updated");
     }
 }
