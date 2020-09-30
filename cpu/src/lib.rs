@@ -298,6 +298,6 @@ mod tests {
 
         chip.handle_opcode(opcode);
         assert_eq!(chip.vf, true, "overflow was detected, vf was updated");
-        assert_eq!(chip.v[1], 1, "stack value at Vx was updated");
+        assert_eq!(chip.v[1], 1, "register Vx was updated");
     }
 }
