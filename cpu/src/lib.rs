@@ -299,5 +299,12 @@ mod tests {
         chip.handle_opcode(opcode);
         assert_eq!(chip.vf, true, "overflow was detected, vf was updated");
         assert_eq!(chip.v[1], 1, "register Vx was updated");
+
+        chip.reset();
+        chip.v[1] = 251;
+        chip.v[2] = 1;
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, false, "no overflow occurred, vf was updated");
+        assert_eq!(chip.v[1], 252, "register Vx was updated");
     }
 }
