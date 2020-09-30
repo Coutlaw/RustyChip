@@ -236,7 +236,11 @@ impl Cpu {
 
     // ADD Vx, Vy
     fn op_8xy4(&mut self, x: usize, y: usize) {
-        self.v[x] = 
+        match self.v[x].checked_add(self.v[y]) {
+            Some(_) => self.vf = true,
+            None => self.vf = false,
+        }
+        self.v[x] = (self.v[x] as u16 + self.v[y] as u16) as u8;
     }
 }
 
