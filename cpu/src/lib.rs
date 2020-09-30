@@ -44,32 +44,32 @@ pub fn parse_op_codes_from_word(opcode: u16) -> OpCode {
 
 pub struct Cpu {
     // index 16 bit register
-    pub i: u16,
+    i: u16,
 
     // program counter
-    pub pc: u16,
+    pc: u16,
 
     // memory
-    pub memory: [u8; 4096],
+    memory: [u8; 4096],
 
     // registers
-    pub v: [u8; 16],
+    v: [u8; 16],
 
     // flag register
-    pub vf: bool,
+    vf: bool,
 
     // peripherals
     // pub keypad: Keypad,
     // pub display: Display,
 
     // program stack
-    pub stack: [u16; 16],
+    stack: [u16; 16],
 
     // stack pointer
-    pub sp: u8,
+    sp: u8,
 
     // delay timer
-    pub dt: u8,
+    dt: u8,
 }
 
 impl Cpu {
