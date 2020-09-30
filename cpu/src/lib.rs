@@ -79,6 +79,7 @@ impl Cpu {
             pc: 0,
             memory: [0; 4096],
             v: [0; 16],
+            vf: false,
             // TODO: fix
             // display: Display::new(),
             // keypad: Keypad::new(),
@@ -93,6 +94,7 @@ impl Cpu {
         self.pc = 0x200;
         self.memory = [0; 4096];
         self.v = [0; 16];
+        self.vf = false;
         self.stack = [0; 16];
         self.sp = 0;
         self.dt = 0;
@@ -237,10 +239,16 @@ impl Cpu {
     // ADD Vx, Vy
     fn op_8xy4(&mut self, x: usize, y: usize) {
         match self.v[x].checked_add(self.v[y]) {
-            Some(_) => self.vf = true,
-            None => self.vf = false,
+            Some(res) => {
+                self.vf = false;
+                self.v[x] = res as u8;
+            },
+            None => {
+                self.vf = true;
+                // We need the lower 8 bits of the result, so calculate as a u16 and convert
+                self.v[x] = (self.v[x] as u16 + self.v[y] as u16) as u8;
+            },
         }
-        self.v[x] = (self.v[x] as u16 + self.v[y] as u16) as u8;
     }
 }
 
@@ -279,5 +287,17 @@ mod tests {
         assert_eq!(chip.stack[1], 10, "stack was updated");
         assert_eq!(chip.sp, 2, "stack pointer was updated");
         assert_eq!(chip.pc, nnn, "program counter was updated");
+    }
+
+    #[test]
+    fn opcode_8xy4(){
+        let opcode = 0x8124;
+        let mut chip: Cpu = Cpu::new();
+        chip.v[1] = 254;
+        chip.v[2] = 3;
+
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, true, "overflow was detected, vf was updated");
+        assert_eq!(chip.v[1], 1, "stack value at Vx was updated");
     }
 }
