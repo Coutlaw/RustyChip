@@ -144,7 +144,7 @@ impl Cpu {
             (0x08, _, _, 0x02) => self.op_8xy2(op_chunks.x, op_chunks.y),
             (0x08, _, _, 0x03) => self.op_8xy3(op_chunks.x, op_chunks.y),
             (0x08, _, _, 0x04) => self.op_8xy4(op_chunks.x, op_chunks.y),
-            // (0x08, _, _, 0x05) => self.op_8xy5(op_chunks.x, op_chunks.y),
+            (0x08, _, _, 0x05) => self.op_8xy5(op_chunks.x, op_chunks.y),
             // (0x08, _, _, 0x06) => self.op_8x06(op_chunks.x),
             // (0x08, _, _, 0x07) => self.op_8xy7(op_chunks.x, op_chunks.y),
             // (0x08, _, _, 0x0E) => self.op_8x0e(op_chunks.x),
@@ -249,6 +249,18 @@ impl Cpu {
                 self.v[x] = (self.v[x] as u16 + self.v[y] as u16) as u8;
             },
         }
+    }
+
+    // SUB Vx, Vy
+    fn op_8xy5(&mut self, x:usize, y: usize) {
+        let (res, overflow) = self.v[x].overflowing_sub(self.v[y]);
+
+        match overflow {
+            false => self.vf = true,
+            true => self.vf = false,
+        }
+
+        self.v[x] = res;
     }
 }
 
