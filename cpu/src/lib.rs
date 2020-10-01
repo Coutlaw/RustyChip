@@ -260,7 +260,8 @@ impl Cpu {
             true => self.vf = false,
         }
 
-        self.v[x] = res;
+        // only take the 8 bit value
+        self.v[x] = res as u8;
     }
 }
 
@@ -269,14 +270,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn opcode_jp(){
+    fn opcode_jp() {
         let mut chip: Cpu = Cpu::new();
         chip.handle_opcode(0x1A2B);
         assert_eq!(chip.pc, 0x0A2B, "program counter was updated");
     }
 
     #[test]
-    fn opcode_ret(){
+    fn opcode_ret() {
         let mut chip: Cpu = Cpu::new();
         chip.sp += 1;
         chip.stack[0] = 1234;
@@ -287,7 +288,7 @@ mod tests {
     }
 
     #[test]
-    fn opcode_2nnn(){
+    fn opcode_2nnn() {
         let opcode = 0x2123;
         let nnn = (opcode & 0x0FFF) as u16;
         let mut chip: Cpu = Cpu::new();
@@ -302,7 +303,7 @@ mod tests {
     }
 
     #[test]
-    fn opcode_8xy4(){
+    fn opcode_8xy4() {
         let opcode = 0x8124;
         let mut chip: Cpu = Cpu::new();
         chip.v[1] = 254;
@@ -318,5 +319,24 @@ mod tests {
         chip.handle_opcode(opcode);
         assert_eq!(chip.vf, false, "no overflow occurred, vf was updated");
         assert_eq!(chip.v[1], 252, "register Vx was updated");
+    }
+
+    #[test]
+    fn opcode_8xy5() {
+        let opcode = 0x8125;
+        let mut chip: Cpu = Cpu::new();
+        chip.v[1] = 0;
+        chip.v[2] = 1;
+
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, false, "overflow was detected, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[1], 255, "register Vx was updated");
+
+        chip.reset();
+        chip.v[1] = 3;
+        chip.v[2] = 1;
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, true, "no overflow occurred, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[1], 2, "register Vx was updated");
     }
 }
