@@ -268,7 +268,8 @@ impl Cpu {
     fn op_8x06(&mut self, x: usize) {
         // find the bit value of the rightmost bit, convert to bool
         self.vf = (self.v[x] & 1) == 1;
-        self.v[x] /= 2;
+        // only take the 8 bit value
+        self.v[x] = (self.v[x] / 2) as u8;
     }
 }
 
@@ -345,5 +346,22 @@ mod tests {
         chip.handle_opcode(opcode);
         assert_eq!(chip.vf, true, "no overflow occurred, vf was updated to NOT BORROW");
         assert_eq!(chip.v[1], 2, "register Vx was updated");
+    }
+
+    #[test]
+    fn opcode_8xy6() {
+        let opcode = 0x8126;
+        let mut chip: Cpu = Cpu::new();
+        chip.v[1] = 5;
+
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, true, "least significant bit is 1, Vf was updated");
+        assert_eq!(chip.v[1], 2, "register Vx was updated");
+
+        chip.reset();
+        chip.v[1] = 2;
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, false, "lest significant bit is 8, Vf was updated");
+        assert_eq!(chip.v[1], 1, "register Vx was updated");
     }
 }
