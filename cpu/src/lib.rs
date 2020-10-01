@@ -255,10 +255,8 @@ impl Cpu {
     fn op_8xy5(&mut self, x:usize, y: usize) {
         let (res, overflow) = self.v[x].overflowing_sub(self.v[y]);
 
-        match overflow {
-            false => self.vf = true,
-            true => self.vf = false,
-        }
+        // update Vf to NOT BORROW, meaning true if there was no borrow, false otherwise
+        self.vf = !overflow;
 
         // only take the 8 bit value
         self.v[x] = res as u8;
