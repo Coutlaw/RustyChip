@@ -373,4 +373,23 @@ mod tests {
         assert_eq!(chip.vf, false, "lest significant bit is 8, Vf was updated");
         assert_eq!(chip.v[1], 1, "register Vx was updated");
     }
+
+    #[test]
+    fn opcode_8xy7() {
+        let opcode = 0x8127;
+        let mut chip: Cpu = Cpu::new();
+        chip.v[1] = 1;
+        chip.v[2] = 0;
+
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, false, "overflow was detected, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[1], 255, "register Vx was updated");
+
+        chip.reset();
+        chip.v[1] = 1;
+        chip.v[2] = 3;
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, true, "no overflow occurred, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[1], 2, "register Vx was updated");
+    }
 }
