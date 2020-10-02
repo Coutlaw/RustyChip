@@ -265,7 +265,7 @@ impl Cpu {
     // SHR Vx {, Vy}
     fn op_8x06(&mut self, x: usize) {
         // find the bit value of the rightmost bit, convert to bool
-        self.vf = (self.v[x] & 1) == 1;
+        self.vf = (self.v[x] & 1) != 0;
         // only take the 8 bit value
         self.v[x] = (self.v[x] / 2) as u8;
     }
@@ -285,7 +285,7 @@ impl Cpu {
     fn op_8x0e(&mut self, x: usize) {
         // find the bit value of the leftmost bit (right 7 spaces for 8 bit int), convert to bool
         // if it is a 1, then set Vf to 1, else 0
-        self.vf = (self.v[x] & (1 << 7)) == 1;
+        self.vf = self.v[x] & (1 << 7) != 0;
         // only take the 8 bit value
         self.v[x] = (self.v[x] as u16 * 2) as u8;
     }
