@@ -285,9 +285,9 @@ impl Cpu {
     fn op_8x0e(&mut self, x: usize) {
         // find the bit value of the leftmost bit (right 7 spaces for 8 bit int), convert to bool
         // if it is a 1, then set Vf to 1, else 0
-        self.vf = (self.v[x] & 1 << 7) == 1;
+        self.vf = (self.v[x] & (1 << 7)) == 1;
         // only take the 8 bit value
-        self.v[x] = (self.v[x] / 2) as u8;
+        self.v[x] = (self.v[x] as u16 * 2) as u8;
     }
 }
 
@@ -379,7 +379,7 @@ mod tests {
         chip.reset();
         chip.v[1] = 2;
         chip.handle_opcode(opcode);
-        assert_eq!(chip.vf, false, "lest significant bit is 8, Vf was updated");
+        assert_eq!(chip.vf, false, "lest significant bit is 0, Vf was updated");
         assert_eq!(chip.v[1], 1, "register Vx was updated");
     }
 
@@ -400,5 +400,22 @@ mod tests {
         chip.handle_opcode(opcode);
         assert_eq!(chip.vf, true, "no overflow occurred, vf was updated to NOT BORROW");
         assert_eq!(chip.v[1], 2, "register Vx was updated");
+    }
+
+    #[test]
+    fn opcode_8xye() {
+        let opcode = 0x812e;
+        let mut chip: Cpu = Cpu::new();
+        chip.v[1] = 128;
+
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, true, "Most significant bit is 1, Vf was updated");
+        assert_eq!(chip.v[1], 0, "There was an overflow, register Vx was updated");
+
+        chip.reset();
+        chip.v[1] = 2;
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, false, "most significant bit is 0, Vf was updated");
+        assert_eq!(chip.v[1], 4, "register Vx was updated");
     }
 }
