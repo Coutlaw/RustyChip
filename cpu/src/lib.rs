@@ -146,7 +146,7 @@ impl Cpu {
             (0x08, _, _, 0x04) => self.op_8xy4(op_chunks.x, op_chunks.y),
             (0x08, _, _, 0x05) => self.op_8xy5(op_chunks.x, op_chunks.y),
             (0x08, _, _, 0x06) => self.op_8x06(op_chunks.x),
-            // (0x08, _, _, 0x07) => self.op_8xy7(op_chunks.x, op_chunks.y),
+            (0x08, _, _, 0x07) => self.op_8xy7(op_chunks.x, op_chunks.y),
             // (0x08, _, _, 0x0E) => self.op_8x0e(op_chunks.x),
             // (0x09, _, _, 0x00) => self.op_9xy0(op_chunks.x, op_chunks.y),
             // (0x0A, _, _, _) => self.op_annn(op_chunks.nnn),
@@ -268,6 +268,17 @@ impl Cpu {
         self.vf = (self.v[x] & 1) == 1;
         // only take the 8 bit value
         self.v[x] = (self.v[x] / 2) as u8;
+    }
+
+    // SUBN Vx, Vy
+    fn op_8xy7(&mut self, x: usize, y: usize) {
+        let (res, overflow) = self.v[y].overflowing_sub(self.v[x]);
+
+        // update Vf to NOT BORROW, meaning true if there was no borrow, false otherwise
+        self.vf = !overflow;
+
+        // only take the 8 bit value
+        self.v[x] = res as u8;
     }
 }
 
