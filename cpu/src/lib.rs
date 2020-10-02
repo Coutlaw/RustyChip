@@ -147,7 +147,7 @@ impl Cpu {
             (0x08, _, _, 0x05) => self.op_8xy5(op_chunks.x, op_chunks.y),
             (0x08, _, _, 0x06) => self.op_8x06(op_chunks.x),
             (0x08, _, _, 0x07) => self.op_8xy7(op_chunks.x, op_chunks.y),
-            // (0x08, _, _, 0x0E) => self.op_8x0e(op_chunks.x),
+            (0x08, _, _, 0x0E) => self.op_8x0e(op_chunks.x),
             // (0x09, _, _, 0x00) => self.op_9xy0(op_chunks.x, op_chunks.y),
             // (0x0A, _, _, _) => self.op_annn(op_chunks.nnn),
             // (0x0B, _, _, _) => self.op_bnnn(op_chunks.nnn),
@@ -279,6 +279,15 @@ impl Cpu {
 
         // only take the 8 bit value
         self.v[x] = res as u8;
+    }
+
+    // SHL Vx {, Vy}
+    fn op_8x0e(&mut self, x: usize) {
+        // find the bit value of the leftmost bit (right 7 spaces for 8 bit int), convert to bool
+        // if it is a 1, then set Vf to 1, else 0
+        self.vf = (self.v[x] & 1 << 7) == 1;
+        // only take the 8 bit value
+        self.v[x] = (self.v[x] / 2) as u8;
     }
 }
 
