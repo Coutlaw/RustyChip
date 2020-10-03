@@ -148,7 +148,7 @@ impl Cpu {
             (0x08, _, _, 0x06) => self.op_8x06(op_chunks.x),
             (0x08, _, _, 0x07) => self.op_8xy7(op_chunks.x, op_chunks.y),
             (0x08, _, _, 0x0E) => self.op_8x0e(op_chunks.x),
-            // (0x09, _, _, 0x00) => self.op_9xy0(op_chunks.x, op_chunks.y),
+            (0x09, _, _, 0x00) => self.op_9xy0(op_chunks.x, op_chunks.y),
             // (0x0A, _, _, _) => self.op_annn(op_chunks.nnn),
             // (0x0B, _, _, _) => self.op_bnnn(op_chunks.nnn),
             // (0x0C, _, _, _) => self.op_cxkk(op_chunks.x, op_chunks.kk),
@@ -288,6 +288,11 @@ impl Cpu {
         self.vf = self.v[x] & (1 << 7) != 0;
         // only take the 8 bit value
         self.v[x] = (self.v[x] as u16 * 2) as u8;
+    }
+
+    // SNE Vx, Vy
+    fn op_9xy0(&mut self, x: usize, y: usize) {
+        if self.v[x] != self.v[y] { self.pc += 2 }
     }
 }
 
