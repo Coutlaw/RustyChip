@@ -144,10 +144,10 @@ impl Cpu {
             (0x08, _, _, 0x02) => self.op_8xy2(op_chunks.x, op_chunks.y),
             (0x08, _, _, 0x03) => self.op_8xy3(op_chunks.x, op_chunks.y),
             (0x08, _, _, 0x04) => self.op_8xy4(op_chunks.x, op_chunks.y),
-            // (0x08, _, _, 0x05) => self.op_8xy5(op_chunks.x, op_chunks.y),
-            // (0x08, _, _, 0x06) => self.op_8x06(op_chunks.x),
-            // (0x08, _, _, 0x07) => self.op_8xy7(op_chunks.x, op_chunks.y),
-            // (0x08, _, _, 0x0E) => self.op_8x0e(op_chunks.x),
+            (0x08, _, _, 0x05) => self.op_8xy5(op_chunks.x, op_chunks.y),
+            (0x08, _, _, 0x06) => self.op_8x06(op_chunks.x),
+            (0x08, _, _, 0x07) => self.op_8xy7(op_chunks.x, op_chunks.y),
+            (0x08, _, _, 0x0E) => self.op_8x0e(op_chunks.x),
             // (0x09, _, _, 0x00) => self.op_9xy0(op_chunks.x, op_chunks.y),
             // (0x0A, _, _, _) => self.op_annn(op_chunks.nnn),
             // (0x0B, _, _, _) => self.op_bnnn(op_chunks.nnn),
@@ -250,6 +250,45 @@ impl Cpu {
             },
         }
     }
+
+    // SUB Vx, Vy
+    fn op_8xy5(&mut self, x:usize, y: usize) {
+        let (res, overflow) = self.v[x].overflowing_sub(self.v[y]);
+
+        // update Vf to NOT BORROW, meaning true if there was no borrow, false otherwise
+        self.vf = !overflow;
+
+        // only take the 8 bit value
+        self.v[x] = res as u8;
+    }
+
+    // SHR Vx {, Vy}
+    fn op_8x06(&mut self, x: usize) {
+        // find the bit value of the rightmost bit, convert to bool
+        self.vf = (self.v[x] & 1) != 0;
+        // only take the 8 bit value
+        self.v[x] = (self.v[x] / 2) as u8;
+    }
+
+    // SUBN Vx, Vy
+    fn op_8xy7(&mut self, x: usize, y: usize) {
+        let (res, overflow) = self.v[y].overflowing_sub(self.v[x]);
+
+        // update Vf to NOT BORROW, meaning true if there was no borrow, false otherwise
+        self.vf = !overflow;
+
+        // only take the 8 bit value
+        self.v[x] = res as u8;
+    }
+
+    // SHL Vx {, Vy}
+    fn op_8x0e(&mut self, x: usize) {
+        // find the bit value of the leftmost bit (right 7 spaces for 8 bit int), convert to bool
+        // if it is a 1, then set Vf to 1, else 0
+        self.vf = self.v[x] & (1 << 7) != 0;
+        // only take the 8 bit value
+        self.v[x] = (self.v[x] as u16 * 2) as u8;
+    }
 }
 
 #[cfg(test)]
@@ -257,14 +296,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn opcode_jp(){
+    fn opcode_jp() {
         let mut chip: Cpu = Cpu::new();
         chip.handle_opcode(0x1A2B);
         assert_eq!(chip.pc, 0x0A2B, "program counter was updated");
     }
 
     #[test]
-    fn opcode_ret(){
+    fn opcode_ret() {
         let mut chip: Cpu = Cpu::new();
         chip.sp += 1;
         chip.stack[0] = 1234;
@@ -275,7 +314,7 @@ mod tests {
     }
 
     #[test]
-    fn opcode_2nnn(){
+    fn opcode_2nnn() {
         let opcode = 0x2123;
         let nnn = (opcode & 0x0FFF) as u16;
         let mut chip: Cpu = Cpu::new();
@@ -290,7 +329,7 @@ mod tests {
     }
 
     #[test]
-    fn opcode_8xy4(){
+    fn opcode_8xy4() {
         let opcode = 0x8124;
         let mut chip: Cpu = Cpu::new();
         chip.v[1] = 254;
@@ -306,5 +345,77 @@ mod tests {
         chip.handle_opcode(opcode);
         assert_eq!(chip.vf, false, "no overflow occurred, vf was updated");
         assert_eq!(chip.v[1], 252, "register Vx was updated");
+    }
+
+    #[test]
+    fn opcode_8xy5() {
+        let opcode = 0x8125;
+        let mut chip: Cpu = Cpu::new();
+        chip.v[1] = 0;
+        chip.v[2] = 1;
+
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, false, "overflow was detected, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[1], 255, "register Vx was updated");
+
+        chip.reset();
+        chip.v[1] = 3;
+        chip.v[2] = 1;
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, true, "no overflow occurred, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[1], 2, "register Vx was updated");
+    }
+
+    #[test]
+    fn opcode_8xy6() {
+        let opcode = 0x8126;
+        let mut chip: Cpu = Cpu::new();
+        chip.v[1] = 5;
+
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, true, "least significant bit is 1, Vf was updated");
+        assert_eq!(chip.v[1], 2, "register Vx was updated");
+
+        chip.reset();
+        chip.v[1] = 2;
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, false, "lest significant bit is 0, Vf was updated");
+        assert_eq!(chip.v[1], 1, "register Vx was updated");
+    }
+
+    #[test]
+    fn opcode_8xy7() {
+        let opcode = 0x8127;
+        let mut chip: Cpu = Cpu::new();
+        chip.v[1] = 1;
+        chip.v[2] = 0;
+
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, false, "overflow was detected, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[1], 255, "register Vx was updated");
+
+        chip.reset();
+        chip.v[1] = 1;
+        chip.v[2] = 3;
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, true, "no overflow occurred, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[1], 2, "register Vx was updated");
+    }
+
+    #[test]
+    fn opcode_8xye() {
+        let opcode = 0x812e;
+        let mut chip: Cpu = Cpu::new();
+        chip.v[1] = 128;
+
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, true, "Most significant bit is 1, Vf was updated");
+        assert_eq!(chip.v[1], 0, "There was an overflow, register Vx was updated");
+
+        chip.reset();
+        chip.v[1] = 2;
+        chip.handle_opcode(opcode);
+        assert_eq!(chip.vf, false, "most significant bit is 0, Vf was updated");
+        assert_eq!(chip.v[1], 4, "register Vx was updated");
     }
 }
