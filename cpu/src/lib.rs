@@ -55,9 +55,6 @@ pub struct Cpu {
     // registers
     v: [u8; 16],
 
-    // flag register
-    vf: bool,
-
     // peripherals
     // pub keypad: Keypad,
     // pub display: Display,
@@ -79,7 +76,6 @@ impl Cpu {
             pc: 0,
             memory: [0; 4096],
             v: [0; 16],
-            vf: false,
             // TODO: fix
             // display: Display::new(),
             // keypad: Keypad::new(),
@@ -94,7 +90,6 @@ impl Cpu {
         self.pc = 0x200;
         self.memory = [0; 4096];
         self.v = [0; 16];
-        self.vf = false;
         self.stack = [0; 16];
         self.sp = 0;
         self.dt = 0;
@@ -240,11 +235,11 @@ impl Cpu {
     fn op_8xy4(&mut self, x: usize, y: usize) {
         match self.v[x].checked_add(self.v[y]) {
             Some(res) => {
-                self.vf = false;
+                self.v[0xF] = 0;
                 self.v[x] = res as u8;
             },
             None => {
-                self.vf = true;
+                self.v[0xF] = 1;
                 // We need the lower 8 bits of the result, so calculate as a u16 and convert
                 self.v[x] = (self.v[x] as u16 + self.v[y] as u16) as u8;
             },
@@ -256,7 +251,7 @@ impl Cpu {
         let (res, overflow) = self.v[x].overflowing_sub(self.v[y]);
 
         // update Vf to NOT BORROW, meaning true if there was no borrow, false otherwise
-        self.vf = !overflow;
+        self.v[0xF] = !overflow as u8;
 
         // only take the 8 bit value
         self.v[x] = res as u8;
@@ -265,7 +260,7 @@ impl Cpu {
     // SHR Vx {, Vy}
     fn op_8x06(&mut self, x: usize) {
         // find the bit value of the rightmost bit, convert to bool
-        self.vf = (self.v[x] & 1) != 0;
+        self.v[0xF] = self.v[x] & 1;
         // only take the 8 bit value
         self.v[x] = (self.v[x] / 2) as u8;
     }
@@ -275,7 +270,7 @@ impl Cpu {
         let (res, overflow) = self.v[y].overflowing_sub(self.v[x]);
 
         // update Vf to NOT BORROW, meaning true if there was no borrow, false otherwise
-        self.vf = !overflow;
+        self.v[0xF] = !overflow as u8;
 
         // only take the 8 bit value
         self.v[x] = res as u8;
@@ -285,7 +280,7 @@ impl Cpu {
     fn op_8x0e(&mut self, x: usize) {
         // find the bit value of the leftmost bit (right 7 spaces for 8 bit int), convert to bool
         // if it is a 1, then set Vf to 1, else 0
-        self.vf = self.v[x] & (1 << 7) != 0;
+        self.v[0xF] = (self.v[x] & (1 << 7)) >> 7;
         // only take the 8 bit value
         self.v[x] = (self.v[x] as u16 * 2) as u8;
     }
@@ -341,14 +336,14 @@ mod tests {
         chip.v[2] = 3;
 
         chip.handle_opcode(opcode);
-        assert_eq!(chip.vf, true, "overflow was detected, vf was updated");
+        assert_eq!(chip.v[0xF], 1, "overflow was detected, vf was updated");
         assert_eq!(chip.v[1], 1, "register Vx was updated");
 
         chip.reset();
         chip.v[1] = 251;
         chip.v[2] = 1;
         chip.handle_opcode(opcode);
-        assert_eq!(chip.vf, false, "no overflow occurred, vf was updated");
+        assert_eq!(chip.v[0xF], 0, "no overflow occurred, vf was updated");
         assert_eq!(chip.v[1], 252, "register Vx was updated");
     }
 
@@ -360,14 +355,14 @@ mod tests {
         chip.v[2] = 1;
 
         chip.handle_opcode(opcode);
-        assert_eq!(chip.vf, false, "overflow was detected, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[0xF], 0, "overflow was detected, vf was updated to NOT BORROW");
         assert_eq!(chip.v[1], 255, "register Vx was updated");
 
         chip.reset();
         chip.v[1] = 3;
         chip.v[2] = 1;
         chip.handle_opcode(opcode);
-        assert_eq!(chip.vf, true, "no overflow occurred, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[0xF], 1, "no overflow occurred, vf was updated to NOT BORROW");
         assert_eq!(chip.v[1], 2, "register Vx was updated");
     }
 
@@ -378,13 +373,13 @@ mod tests {
         chip.v[1] = 5;
 
         chip.handle_opcode(opcode);
-        assert_eq!(chip.vf, true, "least significant bit is 1, Vf was updated");
+        assert_eq!(chip.v[0xF], 1, "least significant bit is 1, Vf was updated");
         assert_eq!(chip.v[1], 2, "register Vx was updated");
 
         chip.reset();
         chip.v[1] = 2;
         chip.handle_opcode(opcode);
-        assert_eq!(chip.vf, false, "lest significant bit is 0, Vf was updated");
+        assert_eq!(chip.v[0xF], 0, "lest significant bit is 0, Vf was updated");
         assert_eq!(chip.v[1], 1, "register Vx was updated");
     }
 
@@ -396,14 +391,14 @@ mod tests {
         chip.v[2] = 0;
 
         chip.handle_opcode(opcode);
-        assert_eq!(chip.vf, false, "overflow was detected, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[0xF], 0, "overflow was detected, vf was updated to NOT BORROW");
         assert_eq!(chip.v[1], 255, "register Vx was updated");
 
         chip.reset();
         chip.v[1] = 1;
         chip.v[2] = 3;
         chip.handle_opcode(opcode);
-        assert_eq!(chip.vf, true, "no overflow occurred, vf was updated to NOT BORROW");
+        assert_eq!(chip.v[0xF], 1, "no overflow occurred, vf was updated to NOT BORROW");
         assert_eq!(chip.v[1], 2, "register Vx was updated");
     }
 
@@ -414,13 +409,13 @@ mod tests {
         chip.v[1] = 128;
 
         chip.handle_opcode(opcode);
-        assert_eq!(chip.vf, true, "Most significant bit is 1, Vf was updated");
+        assert_eq!(chip.v[0xF], 1, "Most significant bit is 1, Vf was updated");
         assert_eq!(chip.v[1], 0, "There was an overflow, register Vx was updated");
 
         chip.reset();
         chip.v[1] = 2;
         chip.handle_opcode(opcode);
-        assert_eq!(chip.vf, false, "most significant bit is 0, Vf was updated");
+        assert_eq!(chip.v[0xF], 0, "most significant bit is 0, Vf was updated");
         assert_eq!(chip.v[1], 4, "register Vx was updated");
     }
 }
