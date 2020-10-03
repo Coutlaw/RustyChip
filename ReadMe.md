@@ -4,9 +4,32 @@ It essentially a virtual machine to make the development of games easier.
 
 ## Memory
 
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/dcc7d926-0b79-47be-be6f-6341742bb0b3/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/dcc7d926-0b79-47be-be6f-6341742bb0b3/Untitled.png)
+```
++---------------+= 0xFFF (4095) End of Chip-8 RAM
+|               |
+|               |
+|               |
+|               |
+|               |
+| 0x200 to 0xFFF|
+|     Chip-8    |
+| Program / Data|
+|     Space     |
+|               |
+|               |
+|               |
++- - - - - - - -+= 0x600 (1536) Start of ETI 660 Chip-8 programs
+|               |
+|               |
+|               |
++---------------+= 0x200 (512) Start of most Chip-8 programs
+| 0x000 to 0x1FF|
+| Reserved for  |
+|  interpreter  |
++---------------+= 0x000 (0) Start of Chip-8 RAM
+```
 
-The bottom reserved memory is for things liek character sets
+The bottom reserved memory is for things like character sets
 
 ## Stack
 
@@ -18,7 +41,7 @@ The stack is not a part of the memory lay out, it is separate.
 
 the chip8 has 16 8 bit data registers, each register can hold 1 byte of information
 
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/45e4c782-9c36-4822-9545-c017727637b6/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/45e4c782-9c36-4822-9545-c017727637b6/Untitled.png)
+![Registers](./imgs/Registers.png)
 
 The data registers should be implemented with an array with a size of 16
 
@@ -54,23 +77,21 @@ the display is a 64x32 monochrome
 
 Drawing is done with sprites, not pixels. sprites wrap the screen
 
-Sprites are many pixels groupsed together that can be drawn to the screen as a whole
+Sprites are many pixels grouped together that can be drawn to the screen as a whole
 
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/3dc7dae1-7b9b-4f66-a538-45e6aa842cc2/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/3dc7dae1-7b9b-4f66-a538-45e6aa842cc2/Untitled.png)
+![sprites](./imgs/Sprites.png)
 
 Sprites can be a max of 8 bits in width, and 15 bits in height.
 
 There is a draw instruction in the Chip8 so it knows what to draw
 
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/0d4b8d50-3cd5-477e-b0bf-621b1a6ddbd2/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/0d4b8d50-3cd5-477e-b0bf-621b1a6ddbd2/Untitled.png)
-
-Sprites get XOR'd onto the dispaly, if this causes any pixels to be erased then the VF register is set to 1, else 0
+Sprites get XOR'd onto the display, if this causes any pixels to be erased then the VF register is set to 1, else 0
 
 ## Keyboard
 
 16 keys from 0F, you could represent this with a 16 byte array. We would have to map our physical keyboard to this old keyboard.
 
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d2d15b37-7b94-4120-afc7-4b0512a88d92/Untitled.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d2d15b37-7b94-4120-afc7-4b0512a88d92/Untitled.png)
+![keyboard](./imgs/Keyboard.png)
 
 ## Credits
 - https://www.youtube.com/watch?v=ml44mHKd0ss
