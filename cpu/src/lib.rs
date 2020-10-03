@@ -93,7 +93,6 @@ impl Cpu {
         self.stack = [0; 16];
         self.sp = 0;
         self.dt = 0;
-        //self.rand = ComplementaryMultiplyWithCarryGen::new(1);
         // TODO: impl display
         //self.display.cls();
         // for i in 0..80 {
