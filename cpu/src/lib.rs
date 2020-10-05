@@ -302,7 +302,10 @@ impl Cpu {
     // RND Vx, byte
     fn op_cxkk(&mut self, x: usize, kk: u8) {
         use rand::Rng;
-        
+        // generate random value between 0-255, rand is non inclusive of right value
+        let rand_bit: u8 = rand::thread_rng().gen();
+
+        self.v[x] = kk & rand_bit
     }
 }
 
