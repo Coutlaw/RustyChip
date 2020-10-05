@@ -302,11 +302,12 @@ impl Cpu {
     // RND Vx, byte
     fn op_cxkk(&mut self, x: usize, kk: u8) {
         use rand::Rng;
-        // generate random value between 0-255, rand is non inclusive of right value
+        // generate random value between 0-255, max range of u8
         let rand_bit: u8 = rand::thread_rng().gen();
 
         self.v[x] = kk & rand_bit
     }
+
 }
 
 #[cfg(test)]
@@ -436,4 +437,5 @@ mod tests {
         assert_eq!(chip.v[0xF], 0, "most significant bit is 0, Vf was updated");
         assert_eq!(chip.v[1], 4, "register Vx was updated");
     }
+
 }
