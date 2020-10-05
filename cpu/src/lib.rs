@@ -145,7 +145,7 @@ impl Cpu {
             (0x09, _, _, 0x00) => self.op_9xy0(op_chunks.x, op_chunks.y),
             (0x0A, _, _, _) => self.op_annn(op_chunks.nnn),
             (0x0B, _, _, _) => self.op_bnnn(op_chunks.nnn),
-            // (0x0C, _, _, _) => self.op_cxkk(op_chunks.x, op_chunks.kk),
+            (0x0C, _, _, _) => self.op_cxkk(op_chunks.x, op_chunks.kk),
             // (0x0D, _, _, _) => self.op_dxyn(op_chunks.x, op_chunks.y, op_chunks.n),
             // (0x0E, _, 0x09, 0x0E) => self.op_ex9e(op_chunks.x),
             // (0x0E, _, 0x0A, 0x01) => self.op_exa1(op_chunks.x),
@@ -297,6 +297,12 @@ impl Cpu {
     // JP V0, addr
     fn op_bnnn(&mut self, nnn: usize) {
         self.pc += self.v[0x0] as u16 + nnn as u16;
+    }
+
+    // RND Vx, byte
+    fn op_cxkk(&mut self, x: usize, kk: u8) {
+        use rand::Rng;
+        
     }
 }
 
