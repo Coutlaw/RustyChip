@@ -1,5 +1,5 @@
-// use cpu::Cpu;
+use cpu::Cpu;
 fn main() {
     println!("Hello, world!");
-    //let test =  Cpu::new();
+    let test =  Cpu::new();
 }
