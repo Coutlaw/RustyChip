@@ -16,7 +16,6 @@ pub struct OpCode {
 }
 
 pub fn parse_op_codes_from_word(opcode: u16) -> OpCode {
-
     // opcode params
     // take the op code, mask its position, shift to the 0th place of the instruction
 
@@ -30,7 +29,7 @@ pub fn parse_op_codes_from_word(opcode: u16) -> OpCode {
     let nnn = (opcode & 0x0FFF) as usize;
 
     // n or nibble - A 4-bit value, the lowest 4 bits of the instruction
-    let n = ((opcode & 0x000F)) as usize;
+    let n = (opcode & 0x000F) as usize;
 
     // kk or byte - An 8-bit value, the lowest 8 bits of the instruction
     let kk = (opcode & 0x00FF) as u8;
@@ -40,8 +39,18 @@ pub fn parse_op_codes_from_word(opcode: u16) -> OpCode {
     let op_2 = ((opcode & 0x0F00) >> 8) as usize;
     let op_3 = ((opcode & 0x00F0) >> 4) as usize;
     let op_4 = (opcode & 0x000F) as usize;
-    
-    return OpCode { x, y, nnn, n, kk, op_1, op_2, op_3, op_4 };
+
+    return OpCode {
+        x,
+        y,
+        nnn,
+        n,
+        kk,
+        op_1,
+        op_2,
+        op_3,
+        op_4,
+    };
 }
 
 pub struct Cpu {
@@ -125,13 +134,18 @@ impl Cpu {
         let op_chunks = parse_op_codes_from_word(opcode);
 
         // match opcodes to a function that updates the CPU state
-        match (op_chunks.op_1, op_chunks.op_2, op_chunks.op_3, op_chunks.op_4) {
+        match (
+            op_chunks.op_1,
+            op_chunks.op_2,
+            op_chunks.op_3,
+            op_chunks.op_4,
+        ) {
             (0x00, 0x00, 0x0E, 0x00) => self.op_00e0(),
             (0x00, 0x00, 0x0E, 0x0E) => self.op_00ee(),
             (0x01, _, _, _) => self.op_1nnn(op_chunks.nnn),
             (0x02, _, _, _) => self.op_2nnn(op_chunks.nnn),
             (0x03, _, _, _) => self.op_3xkk(op_chunks.x, op_chunks.kk),
-            (0x04, _, _, _) => self.op_4xkk(op_chunks.x,op_chunks.kk),
+            (0x04, _, _, _) => self.op_4xkk(op_chunks.x, op_chunks.kk),
             (0x05, _, _, 0x00) => self.op_5xy0(op_chunks.x, op_chunks.y),
             (0x06, _, _, _) => self.op_6xkk(op_chunks.x, op_chunks.kk),
             (0x07, _, _, _) => self.op_7xkk(op_chunks.x, op_chunks.kk),
@@ -189,17 +203,23 @@ impl Cpu {
 
     // SE Vx KK
     fn op_3xkk(&mut self, x: usize, kk: u8) {
-        if self.v[x] == kk { self.pc += 2 };
+        if self.v[x] == kk {
+            self.pc += 2
+        };
     }
 
     // SNE Vx kk
     fn op_4xkk(&mut self, x: usize, kk: u8) {
-        if self.v[x] != kk { self.pc += 2 };
+        if self.v[x] != kk {
+            self.pc += 2
+        };
     }
 
     // SE Vx Vy
     fn op_5xy0(&mut self, x: usize, y: usize) {
-        if self.v[x] == self.v[y] { self.pc += 2 };
+        if self.v[x] == self.v[y] {
+            self.pc += 2
+        };
     }
 
     // LD Vx, byte
@@ -238,17 +258,17 @@ impl Cpu {
             Some(res) => {
                 self.v[0xF] = 0;
                 self.v[x] = res as u8;
-            },
+            }
             None => {
                 self.v[0xF] = 1;
                 // We need the lower 8 bits of the result, so calculate as a u16 and convert
                 self.v[x] = (self.v[x] as u16 + self.v[y] as u16) as u8;
-            },
+            }
         }
     }
 
     // SUB Vx, Vy
-    fn op_8xy5(&mut self, x:usize, y: usize) {
+    fn op_8xy5(&mut self, x: usize, y: usize) {
         let (res, overflow) = self.v[x].overflowing_sub(self.v[y]);
 
         // update Vf to NOT BORROW, meaning true if there was no borrow, false otherwise
@@ -288,7 +308,9 @@ impl Cpu {
 
     // SNE Vx, Vy
     fn op_9xy0(&mut self, x: usize, y: usize) {
-        if self.v[x] != self.v[y] { self.pc += 2 }
+        if self.v[x] != self.v[y] {
+            self.pc += 2
+        }
     }
 
     // LD I, addr
@@ -310,19 +332,19 @@ impl Cpu {
         self.v[x] = kk & rand_bit
     }
 
-		// SKP Vx
-		fn op_ex9e(&mut self, x: usize) {
-			if self.keyboard.key_is_pressed(self.v[x]) {
-				self.pc += 2;
-			}
-		}
+    // SKP Vx
+    fn op_ex9e(&mut self, x: usize) {
+        if self.keyboard.key_is_pressed(self.v[x]) {
+            self.pc += 2;
+        }
+    }
 
-		// SKNP Vx
-		fn op_exa1(&mut self, x: usize) {
-			if !self.keyboard.key_is_pressed(self.v[x]) {
-				self.pc += 2;
-			}
-		}
+    // SKNP Vx
+    fn op_exa1(&mut self, x: usize) {
+        if !self.keyboard.key_is_pressed(self.v[x]) {
+            self.pc += 2;
+        }
+    }
 }
 
 #[cfg(test)]
@@ -389,14 +411,20 @@ mod tests {
         chip.v[2] = 1;
 
         chip.handle_opcode(opcode);
-        assert_eq!(chip.v[0xF], 0, "overflow was detected, vf was updated to NOT BORROW");
+        assert_eq!(
+            chip.v[0xF], 0,
+            "overflow was detected, vf was updated to NOT BORROW"
+        );
         assert_eq!(chip.v[1], 255, "register Vx was updated");
 
         chip.reset();
         chip.v[1] = 3;
         chip.v[2] = 1;
         chip.handle_opcode(opcode);
-        assert_eq!(chip.v[0xF], 1, "no overflow occurred, vf was updated to NOT BORROW");
+        assert_eq!(
+            chip.v[0xF], 1,
+            "no overflow occurred, vf was updated to NOT BORROW"
+        );
         assert_eq!(chip.v[1], 2, "register Vx was updated");
     }
 
@@ -425,14 +453,20 @@ mod tests {
         chip.v[2] = 0;
 
         chip.handle_opcode(opcode);
-        assert_eq!(chip.v[0xF], 0, "overflow was detected, vf was updated to NOT BORROW");
+        assert_eq!(
+            chip.v[0xF], 0,
+            "overflow was detected, vf was updated to NOT BORROW"
+        );
         assert_eq!(chip.v[1], 255, "register Vx was updated");
 
         chip.reset();
         chip.v[1] = 1;
         chip.v[2] = 3;
         chip.handle_opcode(opcode);
-        assert_eq!(chip.v[0xF], 1, "no overflow occurred, vf was updated to NOT BORROW");
+        assert_eq!(
+            chip.v[0xF], 1,
+            "no overflow occurred, vf was updated to NOT BORROW"
+        );
         assert_eq!(chip.v[1], 2, "register Vx was updated");
     }
 
@@ -444,7 +478,10 @@ mod tests {
 
         chip.handle_opcode(opcode);
         assert_eq!(chip.v[0xF], 1, "Most significant bit is 1, Vf was updated");
-        assert_eq!(chip.v[1], 0, "There was an overflow, register Vx was updated");
+        assert_eq!(
+            chip.v[1], 0,
+            "There was an overflow, register Vx was updated"
+        );
 
         chip.reset();
         chip.v[1] = 2;
@@ -452,5 +489,4 @@ mod tests {
         assert_eq!(chip.v[0xF], 0, "most significant bit is 0, Vf was updated");
         assert_eq!(chip.v[1], 4, "register Vx was updated");
     }
-
 }
