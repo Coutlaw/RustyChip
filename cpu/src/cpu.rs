@@ -1,5 +1,14 @@
 use crate::keyboard::Keyboard;
 
+const SCREEN_WIDTH: usize = 64;
+const SCREEN_HEIGHT: usize = 32;
+
+// display unicode values
+// empty pixel
+// ▒
+// full pixel
+// █
+
 pub struct OpCode {
     // processed opcodes
     pub op_1: usize,
@@ -68,7 +77,7 @@ pub struct Cpu {
 
     // peripherals
     pub keyboard: Keyboard,
-    // pub display: Display,
+    pub display: [[char; SCREEN_WIDTH]; SCREEN_WIDTH],
 
     // program stack
     stack: [u16; 16],
@@ -87,8 +96,7 @@ impl Cpu {
             pc: 0,
             memory: [0; 4096],
             v: [0; 16],
-            // TODO: fix
-            // display: Display::new(),
+            display: [['▒'; SCREEN_HEIGHT]; SCREEN_WIDTH],
             keyboard: Keyboard::new(),
             stack: [0; 16],
             sp: 0,
