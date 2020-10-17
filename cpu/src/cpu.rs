@@ -336,7 +336,7 @@ impl Cpu {
         self.v[x] = kk & rand_bit
     }
 
-    // DRW Vx, Vy, nibble
+    // DRW Vx, Vy, n
     fn op_dxyn(&mut self, x: usize, y: usize, n: usize) {
         //TODO impl
     }
