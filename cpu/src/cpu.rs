@@ -77,7 +77,7 @@ pub struct Cpu {
 
     // peripherals
     pub keyboard: Keyboard,
-    pub display: [[char; SCREEN_WIDTH]; SCREEN_WIDTH],
+    pub display: [[char; SCREEN_HEIGHT]; SCREEN_WIDTH],
 
     // program stack
     stack: [u16; 16],
@@ -112,11 +112,7 @@ impl Cpu {
         self.stack = [0; 16];
         self.sp = 0;
         self.dt = 0;
-        // TODO: impl display
-        //self.display.cls();
-        // for i in 0..80 {
-        //     self.memory[i] = FONT_SET[i];
-        // }
+        self.display = [['▒'; SCREEN_HEIGHT]; SCREEN_WIDTH]
     }
 
     pub fn execute_cycle(&mut self) {
