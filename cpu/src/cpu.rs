@@ -166,7 +166,7 @@ impl Cpu {
             (0x0A, _, _, _) => self.op_annn(op_chunks.nnn),
             (0x0B, _, _, _) => self.op_bnnn(op_chunks.nnn),
             (0x0C, _, _, _) => self.op_cxkk(op_chunks.x, op_chunks.kk),
-            // (0x0D, _, _, _) => self.op_dxyn(op_chunks.x, op_chunks.y, op_chunks.n),
+            (0x0D, _, _, _) => self.op_dxyn(op_chunks.x, op_chunks.y, op_chunks.n),
             (0x0E, _, 0x09, 0x0E) => self.op_ex9e(op_chunks.x),
             (0x0E, _, 0x0A, 0x01) => self.op_exa1(op_chunks.x),
             // (0x0F, _, 0x00, 0x07) => self.op_fx07(op_chunks.x),
@@ -334,6 +334,11 @@ impl Cpu {
         let rand_bit: u8 = rand::thread_rng().gen();
 
         self.v[x] = kk & rand_bit
+    }
+
+    // DRW Vx, Vy, nibble
+    fn op_dxyn(&mut self, x: usize, y: usize, n: usize) {
+        //TODO impl
     }
 
     // SKP Vx
