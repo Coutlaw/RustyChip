@@ -8,6 +8,8 @@ const SCREEN_HEIGHT: usize = 32;
 // ▒
 // full pixel
 // █
+const ACTIVE_PIXEL: char = '█';
+const EMPTY_PIXEL: char = '▒';
 
 pub struct OpCode {
     // processed opcodes
@@ -338,7 +340,56 @@ impl Cpu {
 
     // DRW Vx, Vy, n
     fn op_dxyn(&mut self, x: usize, y: usize, n: usize) {
-        //TODO impl
+        // Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+        // Vf self.v[0xF]
+
+        // get the sprite out of memory by borrowing a slice of memory from i to i + n
+        let sprite = &self.memory[self.i as usize .. (self.i + n as u16) as usize];
+
+        // traverse ever memory address (each represents a row)
+        for j in 0..sprite.len() {
+            let row = &sprite[j];
+            
+            // go through each bit of the address
+            for i in 0..8 {
+                // starting with the left most bit, shift the bit all the way right
+                // determine if its a 1 or 0
+                let bit_value = row >> (7 - i) & 0x01;
+                let pixel = if bit_value == 1 {
+                    ACTIVE_PIXEL
+                } else {
+                    EMPTY_PIXEL
+                };
+
+                // determine the coordinates for the pixel
+                // and check if it needs to wrap around the display
+                let x_target = if x + i > SCREEN_WIDTH {
+                    i
+                } else {
+                    x + i
+                };
+                let y_target = if y + i > SCREEN_HEIGHT {
+                    i
+                } else {
+                    y + i
+                };
+
+                let display_target_pixel = &self.display[x_target][y_target];
+                let target_is_active = display_target_pixel == &ACTIVE_PIXEL;
+                let new_pixel_is_active = pixel == ACTIVE_PIXEL;
+
+                // detect collision
+                self.v[0xF] = (target_is_active && new_pixel_is_active) as u8;
+
+                // draw value on the display
+                self.display[x_target][y_target] = if (target_is_active as u8 ^ new_pixel_is_active as u8) == 1 {
+                    ACTIVE_PIXEL
+                } else {
+                    EMPTY_PIXEL
+                };
+                
+            }
+        }
     }
 
     // SKP Vx
