@@ -8,8 +8,6 @@ const SCREEN_HEIGHT: usize = 32;
 // ▒
 // full pixel
 // █
-const ACTIVE_PIXEL: char = '█';
-const EMPTY_PIXEL: char = '▒';
 
 pub struct OpCode {
     // processed opcodes
@@ -79,7 +77,7 @@ pub struct Cpu {
 
     // peripherals
     pub keyboard: Keyboard,
-    pub display: [[char; SCREEN_HEIGHT]; SCREEN_WIDTH],
+    pub display: [[u8; SCREEN_HEIGHT]; SCREEN_WIDTH],
 
     // program stack
     stack: [u16; 16],
@@ -98,7 +96,7 @@ impl Cpu {
             pc: 0,
             memory: [0; 4096],
             v: [0; 16],
-            display: [['▒'; SCREEN_HEIGHT]; SCREEN_WIDTH],
+            display: [[0; SCREEN_HEIGHT]; SCREEN_WIDTH],
             keyboard: Keyboard::new(),
             stack: [0; 16],
             sp: 0,
@@ -114,7 +112,7 @@ impl Cpu {
         self.stack = [0; 16];
         self.sp = 0;
         self.dt = 0;
-        self.display = [['▒'; SCREEN_HEIGHT]; SCREEN_WIDTH]
+        self.display = [[0; SCREEN_HEIGHT]; SCREEN_WIDTH]
     }
 
     pub fn execute_cycle(&mut self) {
@@ -354,12 +352,7 @@ impl Cpu {
             for i in 0..8 {
                 // starting with the left most bit, shift the bit all the way right
                 // determine if its a 1 or 0
-                let bit_value = row >> (7 - i) & 0x01;
-                let pixel = if bit_value == 1 {
-                    ACTIVE_PIXEL
-                } else {
-                    EMPTY_PIXEL
-                };
+                let new_pixel_value = row >> (7 - i) & 0x01;
 
                 // determine the coordinates for the pixel
                 // and check if it needs to wrap around the display
@@ -374,20 +367,11 @@ impl Cpu {
                     y + i
                 };
 
-                let display_target_pixel = &self.display[x_target][y_target];
-                let target_is_active = display_target_pixel == &ACTIVE_PIXEL;
-                let new_pixel_is_active = pixel == ACTIVE_PIXEL;
-
                 // detect collision
-                self.v[0xF] = (target_is_active && new_pixel_is_active) as u8;
+                if (self.display[x_target][y_target] & new_pixel_value) == 1 { self.v[0xF] = 1 };
 
-                // draw value on the display
-                self.display[x_target][y_target] = if (target_is_active as u8 ^ new_pixel_is_active as u8) == 1 {
-                    ACTIVE_PIXEL
-                } else {
-                    EMPTY_PIXEL
-                };
-                
+                // draw value on the display (XOR the current value and the new value)
+                self.display[x_target][y_target] = self.display[x_target][y_target] ^ new_pixel_value;
             }
         }
     }
