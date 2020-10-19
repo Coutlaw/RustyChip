@@ -94,7 +94,7 @@ Sprites get XOR'd onto the display, if this causes any pixels to be erased then 
 ![keyboard](./imgs/Keyboard.png)
 
 ## Credits
-- https://www.amazon.com/Extreme-Programming-Explained-Embrace-Change/dp/0321278658
+- http://mattmik.com/files/chip8/mastering/chip8.html
 
 - https://www.youtube.com/watch?v=ml44mHKd0ss
 
