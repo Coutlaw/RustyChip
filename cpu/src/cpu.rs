@@ -3,14 +3,9 @@ use crate::keyboard::Keyboard;
 const SCREEN_WIDTH: usize = 64;
 const SCREEN_HEIGHT: usize = 32;
 
-// constant for a 2 word instruction
+// constant for the instruction
+// This means that each word takes 2 memory locations to read
 const OP_SIZE: u16 = 2;
-
-// display unicode values
-// empty pixel
-// ▒
-// full pixel
-// █
 
 pub struct OpCode {
     // processed opcodes
