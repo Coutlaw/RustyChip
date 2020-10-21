@@ -1,11 +1,13 @@
 use crate::keyboard::Keyboard;
 
-const SCREEN_WIDTH: usize = 64;
-const SCREEN_HEIGHT: usize = 32;
-
 // constant for the instruction
 // This means that each word takes 2 memory locations to read
 const OP_SIZE: u16 = 2;
+
+// constants
+const SCREEN_WIDTH: usize = 64;
+const SCREEN_HEIGHT: usize = 32;
+const DECREMENT_RATE: usize = 60;
 
 pub struct OpCode {
     // processed opcodes
@@ -85,6 +87,9 @@ pub struct Cpu {
 
     // delay timer
     dt: u8,
+
+    // sound timer
+    st: u8,
 }
 
 enum ProgramCounterChange {
@@ -105,6 +110,7 @@ impl Cpu {
             stack: [0; 16],
             sp: 0,
             dt: 0,
+            st: 0,
         }
     }
 
@@ -113,10 +119,11 @@ impl Cpu {
         self.pc = 0x200;
         self.memory = [0; 4096];
         self.v = [0; 16];
+        self.display = [[0; SCREEN_HEIGHT]; SCREEN_WIDTH];
         self.stack = [0; 16];
         self.sp = 0;
         self.dt = 0;
-        self.display = [[0; SCREEN_HEIGHT]; SCREEN_WIDTH]
+        self.st = 0;
     }
 
     pub fn execute_cycle(&mut self) {
