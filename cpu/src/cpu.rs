@@ -472,6 +472,21 @@ mod tests {
     }
 
     #[test]
+    fn opcode_5xy0() {
+        let mut chip: Cpu = Cpu::new();
+        let opcode1 = 0x5230;
+
+        chip.v[2] = 2;
+        chip.v[3] = 2;
+        chip.handle_opcode(opcode1);
+        assert_eq!(chip.pc, 4, "program counter skipped an instruction");
+
+        chip.v[3] = 3;
+        chip.handle_opcode(opcode1);
+        assert_eq!(chip.pc, 6, "program counter updated correctly");
+    }
+
+    #[test]
     fn opcode_8xy4() {
         let opcode = 0x8124;
         let mut chip: Cpu = Cpu::new();
