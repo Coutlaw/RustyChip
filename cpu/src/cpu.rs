@@ -3,6 +3,9 @@ use crate::keyboard::Keyboard;
 const SCREEN_WIDTH: usize = 64;
 const SCREEN_HEIGHT: usize = 32;
 
+// constant for a 2 word instruction
+const OP_SIZE: u16 = 2;
+
 // display unicode values
 // empty pixel
 // ▒
@@ -89,6 +92,12 @@ pub struct Cpu {
     dt: u8,
 }
 
+enum ProgramCounterChange {
+    Next,
+    Skip,
+    Jump(u16),
+}
+
 impl Cpu {
     pub fn new() -> Cpu {
         Cpu {
@@ -118,9 +127,6 @@ impl Cpu {
     pub fn execute_cycle(&mut self) {
         let opcode = self.read_word();
         self.handle_opcode(opcode);
-
-        // Increment the PC by two 8 bit ops, or 1 word
-        self.pc += 2;
     }
 
     // fn decrement_timers(&mut self) {
@@ -136,14 +142,16 @@ impl Cpu {
 
     fn handle_opcode(&mut self, opcode: u16) {
         let op_chunks = parse_op_codes_from_word(opcode);
-
-        // match opcodes to a function that updates the CPU state
-        match (
+        let nibbles = (
             op_chunks.op_1,
             op_chunks.op_2,
             op_chunks.op_3,
             op_chunks.op_4,
-        ) {
+        );
+
+        // match opcode nibbles to a function that updates the CPU state
+        // after the operation, determine how to update the program counter
+        let pc_action = match nibbles {
             (0x00, 0x00, 0x0E, 0x00) => self.op_00e0(),
             (0x00, 0x00, 0x0E, 0x0E) => self.op_00ee(),
             (0x01, _, _, _) => self.op_1nnn(op_chunks.nnn),
@@ -178,86 +186,103 @@ impl Cpu {
             // (0x0F, _, 0x03, 0x03) => self.op_fx33(op_chunks.x),
             // (0x0F, _, 0x05, 0x05) => self.op_fx55(op_chunks.x),
             // (0x0F, _, 0x06, 0x05) => self.op_fx65(op_chunks.x),
-            _ => (println!("not implemented instruction")),
+            _ => ProgramCounterChange::Next,
+        };
+
+        // Update the program counter
+        match pc_action {
+            ProgramCounterChange::Next => self.pc += 2,
+            ProgramCounterChange::Skip => self.pc += 2 * OP_SIZE,
+            ProgramCounterChange::Jump(dest) => self.pc = dest,
         }
     }
 
     // SYS
-    fn op_00e0(&mut self) {
-        println!("attempted to use 0nnn, this is ignored on modern interpreters")
+    fn op_00e0(&mut self) -> ProgramCounterChange {
+        println!("attempted to use 0nnn, this is ignored on modern interpreters");
+        ProgramCounterChange::Next
     }
 
     // RET
-    fn op_00ee(&mut self) {
+    fn op_00ee(&mut self) -> ProgramCounterChange {
         self.sp = self.sp - 1;
-        self.pc = self.stack[self.sp as usize];
+        ProgramCounterChange::Jump(self.stack[self.sp as usize])
     }
 
     // Jp
-    fn op_1nnn(&mut self, nnn: usize) {
-        self.pc = nnn as u16;
+    fn op_1nnn(&mut self, nnn: usize) -> ProgramCounterChange {
+        ProgramCounterChange::Jump(nnn as u16)
     }
 
     // CALL
-    fn op_2nnn(&mut self, nnn: usize) {
+    fn op_2nnn(&mut self, nnn: usize) -> ProgramCounterChange {
         self.stack[self.sp as usize] = self.pc;
         self.sp = self.sp + 1;
-        self.pc = nnn as u16;
+        ProgramCounterChange::Jump(nnn as u16)
     }
 
     // SE Vx KK
-    fn op_3xkk(&mut self, x: usize, kk: u8) {
+    fn op_3xkk(&mut self, x: usize, kk: u8) -> ProgramCounterChange {
         if self.v[x] == kk {
-            self.pc += 2
+            return ProgramCounterChange::Skip;
         };
+        return ProgramCounterChange::Next;
     }
 
     // SNE Vx kk
-    fn op_4xkk(&mut self, x: usize, kk: u8) {
+    fn op_4xkk(&mut self, x: usize, kk: u8) -> ProgramCounterChange {
         if self.v[x] != kk {
-            self.pc += 2
+            return ProgramCounterChange::Skip;
         };
+        return ProgramCounterChange::Next;
     }
 
     // SE Vx Vy
-    fn op_5xy0(&mut self, x: usize, y: usize) {
+    fn op_5xy0(&mut self, x: usize, y: usize) -> ProgramCounterChange {
         if self.v[x] == self.v[y] {
-            self.pc += 2
+            return ProgramCounterChange::Skip;
         };
+        return ProgramCounterChange::Next;
     }
 
     // LD Vx, byte
-    fn op_6xkk(&mut self, x: usize, kk: u8) {
+    fn op_6xkk(&mut self, x: usize, kk: u8) -> ProgramCounterChange {
         self.v[x] = kk;
+        ProgramCounterChange::Next
     }
 
     //ADD Vx, byte
-    fn op_7xkk(&mut self, x: usize, kk: u8) {
+    fn op_7xkk(&mut self, x: usize, kk: u8) -> ProgramCounterChange {
         self.v[x] += kk;
+        ProgramCounterChange::Next
     }
 
     // LD Vx, Vy
-    fn op_8xy0(&mut self, x: usize, y: usize) {
+    fn op_8xy0(&mut self, x: usize, y: usize) -> ProgramCounterChange {
         self.v[x] = self.v[y];
+        ProgramCounterChange::Next
     }
 
     // OR Vx, Vy
-    fn op_8xy1(&mut self, x: usize, y: usize) {
+    fn op_8xy1(&mut self, x: usize, y: usize) -> ProgramCounterChange {
         self.v[x] = self.v[x] | self.v[y];
+        ProgramCounterChange::Next
     }
 
     // AND Vx, Vy
-    fn op_8xy2(&mut self, x: usize, y: usize) {
+    fn op_8xy2(&mut self, x: usize, y: usize) -> ProgramCounterChange {
         self.v[x] = self.v[x] & self.v[y];
+        ProgramCounterChange::Next
     }
 
     // XOR Vx, Vy
-    fn op_8xy3(&mut self, x: usize, y: usize) {
+    fn op_8xy3(&mut self, x: usize, y: usize) -> ProgramCounterChange {
         self.v[x] = self.v[x] ^ self.v[y];
+        ProgramCounterChange::Next
     }
 
     // ADD Vx, Vy
-    fn op_8xy4(&mut self, x: usize, y: usize) {
+    fn op_8xy4(&mut self, x: usize, y: usize) -> ProgramCounterChange {
         match self.v[x].checked_add(self.v[y]) {
             Some(res) => {
                 self.v[0xF] = 0;
@@ -269,10 +294,12 @@ impl Cpu {
                 self.v[x] = (self.v[x] as u16 + self.v[y] as u16) as u8;
             }
         }
+
+        ProgramCounterChange::Next
     }
 
     // SUB Vx, Vy
-    fn op_8xy5(&mut self, x: usize, y: usize) {
+    fn op_8xy5(&mut self, x: usize, y: usize) -> ProgramCounterChange {
         let (res, overflow) = self.v[x].overflowing_sub(self.v[y]);
 
         // update Vf to NOT BORROW, meaning true if there was no borrow, false otherwise
@@ -280,18 +307,22 @@ impl Cpu {
 
         // only take the 8 bit value
         self.v[x] = res as u8;
+
+        ProgramCounterChange::Next
     }
 
     // SHR Vx {, Vy}
-    fn op_8x06(&mut self, x: usize) {
+    fn op_8x06(&mut self, x: usize) -> ProgramCounterChange {
         // find the bit value of the rightmost bit, convert to bool
         self.v[0xF] = self.v[x] & 1;
         // only take the 8 bit value
         self.v[x] = (self.v[x] / 2) as u8;
+
+        ProgramCounterChange::Next
     }
 
     // SUBN Vx, Vy
-    fn op_8xy7(&mut self, x: usize, y: usize) {
+    fn op_8xy7(&mut self, x: usize, y: usize) -> ProgramCounterChange {
         let (res, overflow) = self.v[y].overflowing_sub(self.v[x]);
 
         // update Vf to NOT BORROW, meaning true if there was no borrow, false otherwise
@@ -299,45 +330,53 @@ impl Cpu {
 
         // only take the 8 bit value
         self.v[x] = res as u8;
+
+        ProgramCounterChange::Next
     }
 
     // SHL Vx {, Vy}
-    fn op_8x0e(&mut self, x: usize) {
+    fn op_8x0e(&mut self, x: usize) -> ProgramCounterChange {
         // find the bit value of the leftmost bit (right 7 spaces for 8 bit int), convert to bool
         // if it is a 1, then set Vf to 1, else 0
         self.v[0xF] = (self.v[x] & (1 << 7)) >> 7;
         // only take the 8 bit value
         self.v[x] = (self.v[x] as u16 * 2) as u8;
+
+        ProgramCounterChange::Next
     }
 
     // SNE Vx, Vy
-    fn op_9xy0(&mut self, x: usize, y: usize) {
+    fn op_9xy0(&mut self, x: usize, y: usize) -> ProgramCounterChange {
         if self.v[x] != self.v[y] {
-            self.pc += 2
-        }
+            return ProgramCounterChange::Skip;
+        };
+        ProgramCounterChange::Next
     }
 
     // LD I, addr
-    fn op_annn(&mut self, nnn: usize) {
+    fn op_annn(&mut self, nnn: usize) -> ProgramCounterChange {
         self.i = nnn as u16;
+        ProgramCounterChange::Next
     }
 
     // JP V0, addr
-    fn op_bnnn(&mut self, nnn: usize) {
-        self.pc += self.v[0x0] as u16 + nnn as u16;
+    fn op_bnnn(&mut self, nnn: usize) -> ProgramCounterChange {
+        ProgramCounterChange::Jump(self.v[0x0] as u16 + nnn as u16)
     }
 
     // RND Vx, byte
-    fn op_cxkk(&mut self, x: usize, kk: u8) {
+    fn op_cxkk(&mut self, x: usize, kk: u8) -> ProgramCounterChange {
         use rand::Rng;
         // generate random value between 0-255, max range of u8
         let rand_bit: u8 = rand::thread_rng().gen();
 
-        self.v[x] = kk & rand_bit
+        self.v[x] = kk & rand_bit;
+
+        ProgramCounterChange::Next
     }
 
     // DRW Vx, Vy, n
-    fn op_dxyn(&mut self, x: usize, y: usize, n: usize) {
+    fn op_dxyn(&mut self, x: usize, y: usize, n: usize) -> ProgramCounterChange {
         // Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
         // Vf self.v[0xF]
 
@@ -374,20 +413,24 @@ impl Cpu {
                 self.display[x_target][y_target] = self.display[x_target][y_target] ^ new_pixel_value;
             }
         }
+
+        ProgramCounterChange::Next
     }
 
     // SKP Vx
-    fn op_ex9e(&mut self, x: usize) {
+    fn op_ex9e(&mut self, x: usize) -> ProgramCounterChange {
         if self.keyboard.key_is_pressed(self.v[x]) {
-            self.pc += 2;
-        }
+            return ProgramCounterChange::Skip;
+        };
+        ProgramCounterChange::Next
     }
 
     // SKNP Vx
-    fn op_exa1(&mut self, x: usize) {
+    fn op_exa1(&mut self, x: usize) -> ProgramCounterChange {
         if !self.keyboard.key_is_pressed(self.v[x]) {
-            self.pc += 2;
-        }
+            return ProgramCounterChange::Skip;
+        };
+        ProgramCounterChange::Next
     }
 }
 
