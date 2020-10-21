@@ -180,7 +180,7 @@ impl Cpu {
             (0x0E, _, 0x09, 0x0E) => self.op_ex9e(op_chunks.x),
             (0x0E, _, 0x0A, 0x01) => self.op_exa1(op_chunks.x),
             (0x0F, _, 0x00, 0x07) => self.op_fx07(op_chunks.x),
-            // (0x0F, _, 0x00, 0x0A) => self.op_fx0a(op_chunks.x),
+            (0x0F, _, 0x00, 0x0A) => self.op_fx0a(op_chunks.x),
             // (0x0F, _, 0x01, 0x05) => self.op_fx15(op_chunks.x),
             // (0x0F, _, 0x01, 0x08) => self.op_fx18(op_chunks.x),
             // (0x0F, _, 0x01, 0x0e) => self.op_fx1e(op_chunks.x),
@@ -438,6 +438,14 @@ impl Cpu {
     // LD Vx, DT
     fn op_fx07(&mut self, x: usize) -> ProgramCounterChange {
         self.v[x] = self.dt;
+        ProgramCounterChange::Next
+    }
+
+    // LD Vx, K
+    fn op_fx0a(&mut self, x: usize) -> ProgramCounterChange {
+        // use futures::executor::block_on;
+        // block_on();
+
         ProgramCounterChange::Next
     }
 }
