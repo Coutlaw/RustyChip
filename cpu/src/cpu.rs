@@ -1,4 +1,8 @@
 use crate::keyboard::Keyboard;
+use std::{
+    thread,
+    time::{Duration, Instant},
+};
 
 // constant for the instruction
 // This means that each word takes 2 memory locations to read
@@ -7,7 +11,7 @@ const OP_SIZE: u16 = 2;
 // constants
 const SCREEN_WIDTH: usize = 64;
 const SCREEN_HEIGHT: usize = 32;
-const DECREMENT_RATE: usize = 60;
+const EXECUTION_RATE: f32 = 0.06; // 60 hertz
 
 pub struct OpCode {
     // processed opcodes
@@ -126,16 +130,37 @@ impl Cpu {
         self.st = 0;
     }
 
-    pub fn execute_cycle(&mut self) {
+    pub fn execute_cycle(&mut self) {        
+        // tracking start time of cycle
+        let dur = Duration::from_secs_f32(EXECUTION_RATE);
+        let start = Instant::now();
+
+        // fetch instruction
         let opcode = self.read_word();
+
+        // execute instruction
         self.handle_opcode(opcode);
+
+        // decrement timers
+        self.decrement_timers();
+
+        // calculate the time it took to execute the instruction
+        let runtime = start.elapsed();
+
+        // limit functions to 60 hertz
+        if let Some(remaining) = dur.checked_sub(runtime) {
+            thread::sleep(remaining);
+        }
     }
 
-    // fn decrement_timers(&mut self) {
-    //     if self.dt > 0 {
-    //         self.dt -= 1;
-    //     }
-    // }
+    fn decrement_timers(&mut self) {
+        if self.dt > 0 {
+            self.dt -= 1;
+        }
+        if self.st > 0 {
+            self.st -= 1;
+        }
+    }
 
     // a word is 16 bits, so we combine two 8 bit chunks of memory to form one word
     fn read_word(&mut self) -> u16 {
