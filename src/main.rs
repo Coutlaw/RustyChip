@@ -3,6 +3,7 @@ use std::io::{stdin, stdout, Read, Write};
 
 fn main() {
     let test =  Cpu::new();
+    
 
 //     // Set up render system and register input callbacks
 //   setupGraphics();

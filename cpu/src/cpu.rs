@@ -94,6 +94,9 @@ pub struct Cpu {
 
     // sound timer
     st: u8,
+
+    // paused waiting for input
+    paused: bool,
 }
 
 enum ProgramCounterChange {
@@ -115,6 +118,7 @@ impl Cpu {
             sp: 0,
             dt: 0,
             st: 0,
+            paused: false,
         }
     }
 
