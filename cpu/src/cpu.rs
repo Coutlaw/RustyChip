@@ -208,7 +208,7 @@ impl Cpu {
             (0x0F, _, 0x00, 0x0A) => self.op_fx0a(op_chunks.x),
             (0x0F, _, 0x01, 0x05) => self.op_fx15(op_chunks.x),
             (0x0F, _, 0x01, 0x08) => self.op_fx18(op_chunks.x),
-            // (0x0F, _, 0x01, 0x0e) => self.op_fx1e(op_chunks.x),
+            (0x0F, _, 0x01, 0x0e) => self.op_fx1e(op_chunks.x),
             // (0x0F, _, 0x02, 0x09) => self.op_fx29(op_chunks.x),
             // (0x0F, _, 0x03, 0x03) => self.op_fx33(op_chunks.x),
             // (0x0F, _, 0x05, 0x05) => self.op_fx55(op_chunks.x),
@@ -484,6 +484,12 @@ impl Cpu {
     // LD ST, Vx
     fn op_fx18(&mut self, x: usize) -> ProgramCounterChange {
         self.st = self.v[x];
+        ProgramCounterChange::Next
+    }
+
+    // ADD I, Vx
+    fn op_fx1e(&mut self, x: usize) -> ProgramCounterChange {
+        self.i += self.v[x] as u16;
         ProgramCounterChange::Next
     }
 }
