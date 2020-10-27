@@ -97,6 +97,12 @@ pub struct Cpu {
 
     // paused waiting for input
     paused: bool,
+
+    // keyboard target register
+    kt: u8,
+
+    // previous keyboard sate
+    previous_keys: [bool; 16],
 }
 
 enum ProgramCounterChange {
@@ -119,6 +125,8 @@ impl Cpu {
             dt: 0,
             st: 0,
             paused: false,
+            kt: 0,
+            previous_keys: [false; 16],
         }
     }
 
@@ -132,21 +140,34 @@ impl Cpu {
         self.sp = 0;
         self.dt = 0;
         self.st = 0;
+        self.paused = false;
+        self.kt = 0;
+        self.previous_keys = [false; 16];
     }
 
-    pub fn execute_cycle(&mut self) {        
+    pub fn execute_cycle(&mut self) {
         // tracking start time of cycle
         let dur = Duration::from_secs_f32(EXECUTION_RATE);
         let start = Instant::now();
 
-        // fetch instruction
-        let opcode = self.read_word();
+        if !self.paused {
+            // fetch instruction
+            let opcode = self.read_word();
 
-        // execute instruction
-        self.handle_opcode(opcode);
+            // execute instruction
+            self.handle_opcode(opcode);
 
-        // decrement timers
-        self.decrement_timers();
+            // if the opcode paused the CPU
+            // do not execute any more of the emulation
+            if self.paused {
+                return;
+            }
+
+            // decrement timers
+            self.decrement_timers();
+        } else {
+            self.detect_keyboard_change();
+        }
 
         // calculate the time it took to execute the instruction
         let runtime = start.elapsed();
@@ -163,6 +184,18 @@ impl Cpu {
         }
         if self.st > 0 {
             self.st -= 1;
+        }
+    }
+
+    fn detect_keyboard_change(&mut self) {
+        // look for changes in the keyboard
+        for i in 0..(self.keyboard.keys.len() - 1) {
+            if self.keyboard.keys[i] != self.previous_keys[i] && self.keyboard.key_is_pressed(i as u8) {
+                self.v[self.kt as usize] = i as u8;
+                self.paused = false;
+                self.kt = 0;
+                self.previous_keys = [false; 16];
+            }
         }
     }
 
@@ -472,9 +505,10 @@ impl Cpu {
 
     // LD Vx, K
     fn op_fx0a(&mut self, x: usize) -> ProgramCounterChange {
-        // TODO: fix
-        // use futures::executor::block_on;
-        // block_on();
+        // pause the CPU, and set our target memory location once there is a key press
+        self.paused = true;
+        self.kt = x as u8;
+        self.previous_keys = self.keyboard.keys;
 
         ProgramCounterChange::Next
     }
