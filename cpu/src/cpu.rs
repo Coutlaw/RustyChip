@@ -190,7 +190,9 @@ impl Cpu {
     fn detect_keyboard_change(&mut self) {
         // look for changes in the keyboard
         for i in 0..(self.keyboard.keys.len() - 1) {
-            if self.keyboard.keys[i] != self.previous_keys[i] && self.keyboard.key_is_pressed(i as u8) {
+            if self.keyboard.keys[i] != self.previous_keys[i]
+                && self.keyboard.key_is_pressed(i as u8)
+            {
                 self.v[self.kt as usize] = i as u8;
                 self.paused = false;
                 self.kt = 0;
@@ -445,12 +447,11 @@ impl Cpu {
         // Vf self.v[0xF]
 
         // get the sprite out of memory by borrowing a slice of memory from i to i + n
-        let sprite = &self.memory[self.i as usize .. (self.i + n as u16) as usize];
+        let sprite = &self.memory[self.i as usize..(self.i + n as u16) as usize];
 
         // traverse ever memory address (each represents a row)
         for j in 0..sprite.len() {
             let row = &sprite[j];
-            
             // go through each bit of the address
             for i in 0..8 {
                 // starting with the left most bit, shift the bit all the way right
@@ -459,22 +460,17 @@ impl Cpu {
 
                 // determine the coordinates for the pixel
                 // and check if it needs to wrap around the display
-                let x_target = if x + i > SCREEN_WIDTH {
-                    i
-                } else {
-                    x + i
-                };
-                let y_target = if y + i > SCREEN_HEIGHT {
-                    i
-                } else {
-                    y + i
-                };
+                let x_target = if x + i > SCREEN_WIDTH { i } else { x + i };
+                let y_target = if y + i > SCREEN_HEIGHT { i } else { y + i };
 
                 // detect collision
-                if (self.display[x_target][y_target] & new_pixel_value) == 1 { self.v[0xF] = 1 };
+                if (self.display[x_target][y_target] & new_pixel_value) == 1 {
+                    self.v[0xF] = 1
+                };
 
                 // draw value on the display (XOR the current value and the new value)
-                self.display[x_target][y_target] = self.display[x_target][y_target] ^ new_pixel_value;
+                self.display[x_target][y_target] =
+                    self.display[x_target][y_target] ^ new_pixel_value;
             }
         }
 
