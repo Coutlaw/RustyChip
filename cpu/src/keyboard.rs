@@ -25,16 +25,6 @@ impl Keyboard {
 	pub fn key_is_pressed(&self, key: u8) -> bool {
 		self.keys[key as usize]
 	}
-
-	// convert a keypress into a chip 8 key value if possible
-	fn char_to_key(key: char) -> Option<u8> {
-		if let Some(x) = key.to_digit(10) {
-			if x <= 16 {
-				return Some(x as u8)
-			}
-		}
-		None
-	}
 }
 
 
