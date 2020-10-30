@@ -3,6 +3,7 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
+use crate::font::FONT_SET;
 
 // constant for the instruction
 // This means that each word takes 2 memory locations to read
@@ -113,7 +114,7 @@ enum ProgramCounterChange {
 
 impl Cpu {
     pub fn new() -> Cpu {
-        Cpu {
+        let cpu = Cpu {
             i: 0,
             pc: 0,
             memory: [0; 4096],
@@ -128,6 +129,12 @@ impl Cpu {
             kt: 0,
             previous_keys: [false; 16],
         }
+
+        for i in 0..FONT_SET.len() {
+            cpu.memory[i] = FONT_SET[i];
+        };
+
+        cpu
     }
 
     pub fn reset(&mut self) {
@@ -143,6 +150,10 @@ impl Cpu {
         self.paused = false;
         self.kt = 0;
         self.previous_keys = [false; 16];
+        
+        for i in 0..FONT_SET.len() {
+            self.memory[i] = FONT_SET[i];
+        };
     }
 
     pub fn execute_cycle(&mut self) {
@@ -248,7 +259,7 @@ impl Cpu {
             (0x0F, _, 0x01, 0x05) => self.op_fx15(op_chunks.x),
             (0x0F, _, 0x01, 0x08) => self.op_fx18(op_chunks.x),
             (0x0F, _, 0x01, 0x0e) => self.op_fx1e(op_chunks.x),
-            // (0x0F, _, 0x02, 0x09) => self.op_fx29(op_chunks.x),
+            (0x0F, _, 0x02, 0x09) => self.op_fx29(op_chunks.x),
             // (0x0F, _, 0x03, 0x03) => self.op_fx33(op_chunks.x),
             // (0x0F, _, 0x05, 0x05) => self.op_fx55(op_chunks.x),
             // (0x0F, _, 0x06, 0x05) => self.op_fx65(op_chunks.x),
@@ -526,6 +537,8 @@ impl Cpu {
         self.i += self.v[x] as u16;
         ProgramCounterChange::Next
     }
+
+
 }
 
 #[cfg(test)]
