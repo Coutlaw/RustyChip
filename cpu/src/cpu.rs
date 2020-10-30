@@ -150,7 +150,7 @@ impl Cpu {
         self.paused = false;
         self.kt = 0;
         self.previous_keys = [false; 16];
-        
+
         for i in 0..FONT_SET.len() {
             self.memory[i] = FONT_SET[i];
         };
@@ -537,7 +537,11 @@ impl Cpu {
         self.i += self.v[x] as u16;
         ProgramCounterChange::Next
     }
-
+    // LD F, Vx
+    fn op_fx29(&mut self, x: usize) -> ProgramCounterChange {
+        //TODO: ??
+        ProgramCounterChange::Next
+    }
 
 }
 
