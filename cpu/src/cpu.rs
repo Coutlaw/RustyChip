@@ -260,9 +260,9 @@ impl Cpu {
             (0x0F, _, 0x01, 0x08) => self.op_fx18(op_chunks.x),
             (0x0F, _, 0x01, 0x0e) => self.op_fx1e(op_chunks.x),
             (0x0F, _, 0x02, 0x09) => self.op_fx29(op_chunks.x),
-            // (0x0F, _, 0x03, 0x03) => self.op_fx33(op_chunks.x),
-            // (0x0F, _, 0x05, 0x05) => self.op_fx55(op_chunks.x),
-            // (0x0F, _, 0x06, 0x05) => self.op_fx65(op_chunks.x),
+            (0x0F, _, 0x03, 0x03) => self.op_fx33(op_chunks.x),
+            (0x0F, _, 0x05, 0x05) => self.op_fx55(op_chunks.x),
+            (0x0F, _, 0x06, 0x05) => self.op_fx65(op_chunks.x),
             _ => ProgramCounterChange::Next,
         };
 
