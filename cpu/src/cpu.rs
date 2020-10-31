@@ -549,7 +549,15 @@ impl Cpu {
         self.memory[self.i as usize] = self.v[x] / 100; // max value is 255 so no concern about remainders
         self.memory[(self.i + 1) as usize] = (self.v[x] / 10) % 10; // divide by 10, take the first digit
         self.memory[(self.i + 2) as usize] = self.v[x] % 10; // take the first digit
-        ProgramCounterChange::Next;
+        ProgramCounterChange::Next
+    }
+
+    // LD [I], Vx
+    fn op_fx55(&mut self, x: usize) -> ProgramCounterChange {
+        for i in 0..(x - 1) {
+            self.memory[self.i as usize + i] = self.v[i];
+        };
+        ProgramCounterChange::Next
     }
 
 }
