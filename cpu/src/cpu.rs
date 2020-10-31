@@ -539,9 +539,12 @@ impl Cpu {
     }
     // LD F, Vx
     fn op_fx29(&mut self, x: usize) -> ProgramCounterChange {
-        //TODO: ??
+        // each sprite is 5 bytes long, the * 5 offsets to x's sprite location
+        self.i = (self.v[x] * 5) as u16;
         ProgramCounterChange::Next
     }
+
+
 
 }
 
