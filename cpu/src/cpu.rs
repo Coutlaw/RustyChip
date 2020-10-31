@@ -544,7 +544,13 @@ impl Cpu {
         ProgramCounterChange::Next
     }
 
-
+    // LD B, Vx
+    fn op_fx33(&mut self, x: usize) -> ProgramCounterChange {
+        self.memory[self.i as usize] = self.v[x] / 100; // max value is 255 so no concern about remainders
+        self.memory[(self.i + 1) as usize] = (self.v[x] / 10) % 10; // divide by 10, take the first digit
+        self.memory[(self.i + 2) as usize] = self.v[x] % 10; // take the first digit
+        ProgramCounterChange::Next;
+    }
 
 }
 
