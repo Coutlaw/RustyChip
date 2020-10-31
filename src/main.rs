@@ -2,30 +2,21 @@ use cpu::Cpu;
 use std::io::{stdin, stdout, Read, Write};
 
 fn main() {
-    let test =  Cpu::new();
-    
+    // my CPU
+    let cpu =  Cpu::new();
 
-//     // Set up render system and register input callbacks
-//   setupGraphics();
-//   setupInput();
- 
-//   // Initialize the Chip8 system and load the game into the memory  
-//   myChip8.initialize();
-//   myChip8.loadGame("pong");
- 
-//   // Emulation loop
-//   for(;;)
-//   {
-//     // Emulate one cycle
-//     myChip8.emulateCycle();
- 
-//     // If the draw flag is set, update the screen
-//     if(myChip8.drawFlag)
-//       drawGraphics();
- 
-//     // Store key press state (Press and Release)
-//     myChip8.setKeys();	
-//   }
+    // TODO: add logic to load game into cpu memory
+    
+    // begin executing instructions and updating the display
+    while true {
+        cpu.execute_cycle();
+
+        // display, an array of bits
+        //cpu.display
+
+        //TODO: detect keypress events, map to Chip-8 keyboard
+        // update the chips keyboard state
+    }
 }
 
 // convert a keypress into a chip 8 key value if possible
