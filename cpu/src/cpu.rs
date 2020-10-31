@@ -560,6 +560,14 @@ impl Cpu {
         ProgramCounterChange::Next
     }
 
+    // LD Vx, [I]
+    fn op_fx65(&mut self, x: usize) -> ProgramCounterChange {
+        for i in 0..(x - 1) {
+            self.v[i] = self.memory[self.i as usize + i];
+        };
+        ProgramCounterChange::Next
+    }
+
 }
 
 #[cfg(test)]
