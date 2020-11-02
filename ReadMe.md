@@ -1,6 +1,8 @@
 # What is Chip-8
 
-It essentially a virtual machine to make the development of games easier.
+The Chip-8 is essentially a programming language and virtual machine to make the development of games easier. The Chip-8 interpreter could be a build target for game developers and the interpreter could abstract away physical hardware concerns.
+
+See the core functionality of my emulator look in the CPU implementation [here](https://github.com/Coutlaw/RustyChip/blob/master/cpu/src/cpu.rs)
 
 ## Memory
 
