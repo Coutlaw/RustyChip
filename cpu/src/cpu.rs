@@ -4,6 +4,8 @@ use std::{
     time::{Duration, Instant},
 };
 use crate::font::FONT_SET;
+use std::fs::File;
+use std::io::Read;
 
 // constant for the instruction
 // This means that each word takes 2 memory locations to read
@@ -13,6 +15,8 @@ const OP_SIZE: u16 = 2;
 const SCREEN_WIDTH: usize = 64;
 const SCREEN_HEIGHT: usize = 32;
 const EXECUTION_RATE: f32 = 0.06; // 60 hertz
+// first open memory location for loading programs/games
+const MEMORY_START_INDEX: usize = 200;
 
 pub struct OpCode {
     // processed opcodes
@@ -67,6 +71,11 @@ pub fn parse_op_codes_from_word(opcode: u16) -> OpCode {
     };
 }
 
+pub struct Game {
+    pub Name: String,
+    pub Path: String,
+}
+
 pub struct Cpu {
     // index 16 bit register
     i: u16,
@@ -104,6 +113,9 @@ pub struct Cpu {
 
     // previous keyboard sate
     previous_keys: [bool; 16],
+
+    // available games
+    games: Vec<Game>,
 }
 
 enum ProgramCounterChange {
@@ -128,6 +140,7 @@ impl Cpu {
             paused: false,
             kt: 0,
             previous_keys: [false; 16],
+            games: Vec::new(),
         }
 
         for i in 0..FONT_SET.len() {
@@ -154,6 +167,22 @@ impl Cpu {
         for i in 0..FONT_SET.len() {
             self.memory[i] = FONT_SET[i];
         };
+    }
+
+    pub fn load_game(&mut self, game: &String) {
+        match std::fs::read(game) {
+            Ok(bytes) => { 
+                for (i, byte) in bytes.iter().enumerate() {
+                    if MEMORY_START_INDEX + i > 4096 {
+                        panic!("Program was too large to load into memory")
+                    }
+                    self.memory[MEMORY_START_INDEX + i] = *byte;
+                }
+             }
+            Err(e) => {
+                panic!("{}", e);
+            }
+        }
     }
 
     pub fn execute_cycle(&mut self) {

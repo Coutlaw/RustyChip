@@ -7,6 +7,7 @@ fn main() {
 
     // TODO: add logic to load game into cpu memory
     
+    
     // begin executing instructions and updating the display
     while true {
         cpu.execute_cycle();
