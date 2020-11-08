@@ -12,8 +12,16 @@ fn main() {
     while true {
         cpu.execute_cycle();
 
-        // display, an array of bits
-        //cpu.display
+        // display logic
+        for column in cpu.display().iter() {
+            for value in column.iter() {
+                if value {
+                    print!('█');
+                } else {
+                    print!('▒');
+                }
+            }
+        }
 
         //TODO: detect keypress events, map to Chip-8 keyboard
         // update the chips keyboard state
