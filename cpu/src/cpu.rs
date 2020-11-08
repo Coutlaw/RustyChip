@@ -72,8 +72,8 @@ pub fn parse_op_codes_from_word(opcode: u16) -> OpCode {
 }
 
 pub struct Game {
-    pub Name: String,
-    pub Path: String,
+    pub name: String,
+    pub path: String,
 }
 
 pub struct Cpu {
@@ -126,7 +126,7 @@ enum ProgramCounterChange {
 
 impl Cpu {
     pub fn new() -> Cpu {
-        let cpu = Cpu {
+        let mut cpu = Cpu {
             i: 0,
             pc: 0,
             memory: [0; 4096],
@@ -141,7 +141,7 @@ impl Cpu {
             kt: 0,
             previous_keys: [false; 16],
             games: Vec::new(),
-        }
+        };
 
         for i in 0..FONT_SET.len() {
             cpu.memory[i] = FONT_SET[i];
