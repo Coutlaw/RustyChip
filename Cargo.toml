@@ -1,3 +1,13 @@
+[package]
+name = "rusty_chip"
+version = "0.1.0"
+authors = ["Cass Outlaw <cass.d.outlaw@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+termion = "1"
+cpu = { path = "./cpu"}
+
 [workspace]
 members = [
     "cpu",
