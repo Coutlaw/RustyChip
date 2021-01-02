@@ -1,9 +1,10 @@
+// I hate this, but I would have to restructure the workspace into a lib crate ¯\_(ツ)_/¯
 use cpu::cpu::Cpu;
 use std::io::{stdin, stdout, Read, Write};
 
 fn main() {
     // my CPU
-    let cpu =  Cpu::new();
+    let mut cpu =  Cpu::new();
 
     // TODO: add logic to load game into cpu memory
     
@@ -12,33 +13,18 @@ fn main() {
     loop {
         cpu.execute_cycle();
 
-        /*
-Just a short answer because I‘m on mobile.
-
-You don‘t need to index. This works:
-
-   for (i, row) in grid.iter_mut().enumerate() {
-        for (y, col) in row.iter_mut().enumerate() {
-            println!("{}", col);
-        }
-    }
-Edit:
-If you want to avoid the nested loops and just want to do something with each element, you can use flat_map:
-
-    for element in grid.iter_mut().flat_map(|r| r.iter_mut()) {
-        println!("{}", element);
-    }
-        */
         // display logic
-        for i in cpu.display.enumerate() {
-            for value in column.enumerate() {
-                if value != 0 {
-                    print!("{}", '█');
+        for column in cpu.display.iter() {
+            for value in column.iter() {
+                if *value != 0 {
+                    print!("{} ", '█');
                 } else {
-                    print!("{}", '▒');
+                    print!("{} ", '▒');
                 }
             }
+            println!();
         }
+        println!("Frame");
 
         //TODO: detect keypress events, map to Chip-8 keyboard
         // update the chips keyboard state

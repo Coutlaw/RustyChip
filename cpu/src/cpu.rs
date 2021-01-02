@@ -91,7 +91,7 @@ pub struct Cpu {
 
     // peripherals
     pub keyboard: Keyboard,
-    pub display: [[u8; SCREEN_HEIGHT]; SCREEN_WIDTH],
+    pub display: [[u8; SCREEN_WIDTH]; SCREEN_HEIGHT],
 
     // program stack
     stack: [u16; 16],
@@ -131,7 +131,7 @@ impl Cpu {
             pc: 0,
             memory: [0; 4096],
             v: [0; 16],
-            display: [[0; SCREEN_HEIGHT]; SCREEN_WIDTH],
+            display: [[0; SCREEN_WIDTH]; SCREEN_HEIGHT],
             keyboard: Keyboard::new(),
             stack: [0; 16],
             sp: 0,
@@ -155,7 +155,7 @@ impl Cpu {
         self.pc = 0x200;
         self.memory = [0; 4096];
         self.v = [0; 16];
-        self.display = [[0; SCREEN_HEIGHT]; SCREEN_WIDTH];
+        self.display = [[0; SCREEN_WIDTH]; SCREEN_HEIGHT];
         self.stack = [0; 16];
         self.sp = 0;
         self.dt = 0;
