@@ -4,8 +4,6 @@ use std::{
     time::{Duration, Instant},
 };
 use crate::font::FONT_SET;
-use std::fs::File;
-use std::io::Read;
 
 // constant for the instruction
 // This means that each word takes 2 memory locations to read
@@ -113,9 +111,6 @@ pub struct Cpu {
 
     // previous keyboard sate
     previous_keys: [bool; 16],
-
-    // available games
-    games: Vec<Game>,
 }
 
 enum ProgramCounterChange {
@@ -140,7 +135,6 @@ impl Cpu {
             paused: false,
             kt: 0,
             previous_keys: [false; 16],
-            games: Vec::new(),
         };
 
         for i in 0..FONT_SET.len() {
@@ -178,7 +172,7 @@ impl Cpu {
                     }
                     self.memory[MEMORY_START_INDEX + i] = *byte;
                 }
-             }
+                }
             Err(e) => {
                 panic!("{}", e);
             }
