@@ -5,12 +5,14 @@ use std::io::{stdin, stdout, Read, Write};
 fn main() {
     // my CPU
     let mut cpu =  Cpu::new();
+    let mut i = 0;
 
     // TODO: add logic to load game into cpu memory
     
     
     // begin executing instructions and updating the display
     loop {
+        i+=1;
         cpu.execute_cycle();
 
         // display logic
@@ -24,7 +26,7 @@ fn main() {
             }
             println!();
         }
-        println!("Frame");
+        println!("Frame {}", i);
 
         //TODO: detect keypress events, map to Chip-8 keyboard
         // update the chips keyboard state
