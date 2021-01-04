@@ -4,6 +4,9 @@ use std::{
     time::{Duration, Instant},
 };
 use crate::font::FONT_SET;
+use std::fs::File;
+use std::io::Read;
+
 
 // constant for the instruction
 // This means that each word takes 2 memory locations to read
@@ -69,11 +72,6 @@ pub fn parse_op_codes_from_word(opcode: u16) -> OpCode {
     };
 }
 
-pub struct Game {
-    pub name: String,
-    pub path: String,
-}
-
 pub struct Cpu {
     // index 16 bit register
     i: u16,
@@ -123,7 +121,7 @@ impl Cpu {
     pub fn new() -> Cpu {
         let mut cpu = Cpu {
             i: 0,
-            pc: 0,
+            pc: MEMORY_START_INDEX as u16,
             memory: [0; 4096],
             v: [0; 16],
             display: [[0; SCREEN_WIDTH]; SCREEN_HEIGHT],
@@ -146,7 +144,7 @@ impl Cpu {
 
     pub fn reset(&mut self) {
         self.i = 0;
-        self.pc = 0x200;
+        self.pc = MEMORY_START_INDEX as u16;
         self.memory = [0; 4096];
         self.v = [0; 16];
         self.display = [[0; SCREEN_WIDTH]; SCREEN_HEIGHT];
@@ -164,19 +162,25 @@ impl Cpu {
     }
 
     pub fn load_game(&mut self, game: &String) {
-        match std::fs::read(game) {
-            Ok(bytes) => { 
-                for (i, byte) in bytes.iter().enumerate() {
-                    if MEMORY_START_INDEX + i > 4096 {
-                        panic!("Program was too large to load into memory")
-                    }
-                    self.memory[MEMORY_START_INDEX + i] = *byte;
-                }
-                }
-            Err(e) => {
-                panic!("{}", e);
-            }
+        let mut file = File::open(game).unwrap();
+        let mut data = Vec::<u8>::new();
+        file.read_to_end(&mut data).expect("File not found!");
+        for i in 0..data.len() {
+            self.memory[MEMORY_START_INDEX + i] = data[i];
         }
+        // match std::fs::read(game) {
+        //     Ok(bytes) => { 
+        //         for (i, byte) in bytes.iter().enumerate() {
+        //             if MEMORY_START_INDEX + i > 4096 {
+        //                 panic!("Program was too large to load into memory")
+        //             }
+        //             self.memory[MEMORY_START_INDEX + i] = *byte;
+        //         }
+        //         }
+        //     Err(e) => {
+        //         panic!("{}", e);
+        //     }
+        // }
     }
 
     pub fn execute_cycle(&mut self) {
@@ -241,6 +245,7 @@ impl Cpu {
     }
 
     fn handle_opcode(&mut self, opcode: u16) {
+        println!("opcode: {}", opcode);
         let op_chunks = parse_op_codes_from_word(opcode);
         let nibbles = (
             op_chunks.op_1,

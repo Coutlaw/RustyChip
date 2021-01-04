@@ -1,6 +1,5 @@
 // I hate this, but I would have to restructure the workspace into a lib crate ¯\_(ツ)_/¯
 use cpu::cpu::Cpu;
-use std::io::{stdin, stdout, Read, Write};
 use std::{thread, time};
 use std::env;
 
@@ -13,6 +12,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let rom = &args[1];
 
+    println!("{} rom loaded", rom);
     cpu.load_game(rom);
     
     println!("GAME LOADING");
@@ -26,16 +26,16 @@ fn main() {
         cpu.execute_cycle();
 
         // display logic
-        for column in cpu.display.iter() {
-            for value in column.iter() {
-                if *value != 0 {
-                    print!("{} ", '█');
-                } else {
-                    print!("{} ", '▒');
-                }
-            }
-            println!();
-        }
+        // for column in cpu.display.iter() {
+        //     for value in column.iter() {
+        //         if *value != 0 {
+        //             print!("{} ", '█');
+        //         } else {
+        //             print!("{} ", '▒');
+        //         }
+        //     }
+        //     println!();
+        // }
         println!("Frame {}", i);
 
         //TODO: detect keypress events, map to Chip-8 keyboard
