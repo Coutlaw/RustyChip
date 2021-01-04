@@ -12,13 +12,10 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let rom = &args[1];
 
-    println!("{} rom loaded", rom);
+    //println!("{} rom loaded", rom);
     cpu.load_game(rom);
-    
-    println!("GAME LOADING");
 
-    let wait = time::Duration::from_secs(5);
-    thread::sleep(wait);
+    let mut output = String::new();
     
     // begin executing instructions and updating the display
     loop {
@@ -26,17 +23,22 @@ fn main() {
         cpu.execute_cycle();
 
         // display logic
-        // for column in cpu.display.iter() {
-        //     for value in column.iter() {
-        //         if *value != 0 {
-        //             print!("{} ", '█');
-        //         } else {
-        //             print!("{} ", '▒');
-        //         }
-        //     }
-        //     println!();
-        // }
+        for column in cpu.display.iter() {
+            for value in column.iter() {
+                if *value != 0 {
+                    output.push('█');
+                    //print!("{} ", '█');
+                } else {
+                    output.push('▒');
+                    //print!("{} ", '▒');
+                }
+            }
+            output.push('\n');
+            //println!();
+        }
+        println!("{}", output);
         println!("Frame {}", i);
+        output.clear();
 
         //TODO: detect keypress events, map to Chip-8 keyboard
         // update the chips keyboard state

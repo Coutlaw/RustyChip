@@ -17,7 +17,7 @@ const SCREEN_WIDTH: usize = 64;
 const SCREEN_HEIGHT: usize = 32;
 const EXECUTION_RATE: f32 = 0.06; // 60 hertz
 // first open memory location for loading programs/games
-const MEMORY_START_INDEX: usize = 200;
+const MEMORY_START_INDEX: usize = 0x200;
 
 pub struct OpCode {
     // processed opcodes
@@ -168,19 +168,6 @@ impl Cpu {
         for i in 0..data.len() {
             self.memory[MEMORY_START_INDEX + i] = data[i];
         }
-        // match std::fs::read(game) {
-        //     Ok(bytes) => { 
-        //         for (i, byte) in bytes.iter().enumerate() {
-        //             if MEMORY_START_INDEX + i > 4096 {
-        //                 panic!("Program was too large to load into memory")
-        //             }
-        //             self.memory[MEMORY_START_INDEX + i] = *byte;
-        //         }
-        //         }
-        //     Err(e) => {
-        //         panic!("{}", e);
-        //     }
-        // }
     }
 
     pub fn execute_cycle(&mut self) {
@@ -245,7 +232,7 @@ impl Cpu {
     }
 
     fn handle_opcode(&mut self, opcode: u16) {
-        println!("opcode: {}", opcode);
+        //println!("opcode: {}", opcode);
         let op_chunks = parse_op_codes_from_word(opcode);
         let nibbles = (
             op_chunks.op_1,
@@ -321,7 +308,7 @@ impl Cpu {
 
     // CALL
     fn op_2nnn(&mut self, nnn: usize) -> ProgramCounterChange {
-        self.stack[self.sp as usize] = self.pc;
+        self.stack[self.sp as usize] = self.pc + OP_SIZE;
         self.sp = self.sp + 1;
         ProgramCounterChange::Jump(nnn as u16)
     }
@@ -358,7 +345,7 @@ impl Cpu {
 
     //ADD Vx, byte
     fn op_7xkk(&mut self, x: usize, kk: u8) -> ProgramCounterChange {
-        self.v[x] += kk;
+        self.v[x] = self.v[x].wrapping_add(kk);
         ProgramCounterChange::Next
     }
 
