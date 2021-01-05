@@ -460,6 +460,7 @@ impl Cpu {
 
         let vx = self.v[x] as usize;
         let vy = self.v[y] as usize;
+        let mut collision = false;
 
         // traverse ever memory address (each represents a row)
         for j in 0..sprite.len() {
@@ -472,18 +473,24 @@ impl Cpu {
                 
                 // determine the coordinates for the pixel
                 // and check if it needs to wrap around the display
-                let x_target = if vx + i >= SCREEN_WIDTH { i } else { vx + i };
-                let y_target = if vy + i >= SCREEN_HEIGHT { i } else { vy + i };
+                let x_target = (vx + i) % SCREEN_WIDTH;
+                let y_target = (vy + j) % SCREEN_HEIGHT;
+                let old_value = self.display[y_target][x_target];
 
                 // detect collision
-                if (self.display[y_target][x_target] & new_pixel_value) == 1 {
-                    self.v[0xF] = 1
-                };
+                if old_value == 1 && new_pixel_value == 1{
+                    collision = true;
+                }
 
                 // draw value on the display (XOR the current value and the new value)
-                self.display[y_target][x_target] =
-                    self.display[y_target][x_target] ^ new_pixel_value;
+                self.display[y_target][x_target] = old_value ^ new_pixel_value;
             }
+        }
+
+        if collision {
+            self.v[0xF] = 1;
+        } else {
+            self.v[0xF] = 0;
         }
 
         ProgramCounterChange::Next

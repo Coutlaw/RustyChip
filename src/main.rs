@@ -3,12 +3,12 @@ use minifb::{Key, KeyRepeat, Window, WindowOptions};
 // I hate this, but I would have to restructure the workspace into a lib crate ¯\_(ツ)_/¯
 use cpu::cpu::Cpu;
 use std::env;
-use std::{
-    thread,
-    time::{Duration, Instant},
-};
+// use std::{
+//     thread,
+//     time::{Duration, Instant},
+// };
 
-const EXECUTION_RATE: f32 = 0.06; // 60 hertz
+//const EXECUTION_RATE: f32 = 0.06; // 60 hertz
 
 fn get_chip8_keycode_for(key: Option<Key>) -> Option<u8> {
     match key {
@@ -54,7 +54,6 @@ fn main() {
 
     // my CPU
     let mut cpu =  Cpu::new();
-    let mut i = 0;
 
     // TODO: add logic to load game into cpu memory
     let args: Vec<String> = env::args().collect();
@@ -65,40 +64,25 @@ fn main() {
     
     // begin executing instructions and updating the display
     loop {
-        // // tracking start time of cycle
-        // let dur = Duration::from_secs_f32(EXECUTION_RATE);
-        // let start = Instant::now();
-
-        i+=1;
         cpu.execute_cycle();
 
-
-            for y in 0..height {
-                let y_coord = y / 10;
-                for x in 0..width {
-                    let x_cord = x / 10;
-                    let pixel = cpu.display[y_coord][x_cord];
-                    
-                    let color_pixel = match pixel {
-                        0 => 0x0,
-                        1 => 0xffffff,
-                        _ => {println!("pixel value {}", pixel); 0x0},
-                    };
-                    buffer[(y * width) + x] = color_pixel;
-                }
+        for y in 0..height {
+            let y_coord = y / 10;
+            for x in 0..width {
+                let x_cord = x / 10;
+                let pixel = cpu.display[y_coord][x_cord];
+                let color_pixel = match pixel {
+                    0 => 0x0,
+                    1 => 0xffffff,
+                    _ => {println!("pixel value {}", pixel); 0x0},
+                };
+                buffer[(y * width) + x] = color_pixel;
             }
+        }
 
-            let _ = window.update_with_buffer(&buffer);
+        let _ = window.update_with_buffer(&buffer);
         //TODO: detect keypress events, map to Chip-8 keyboard
         // update the chips keyboard state
-
-        // // calculate the time it took to execute the instruction
-        // let runtime = start.elapsed();
-
-        // // limit functions to 60 hertz
-        // if let Some(remaining) = dur.checked_sub(runtime) {
-        //     thread::sleep(remaining);
-        // }
     }
 }
 
