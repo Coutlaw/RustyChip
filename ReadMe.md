@@ -82,6 +82,8 @@ Drawing is done with sprites, not pixels. sprites wrap the screen
 
 Sprites are many pixels grouped together that can be drawn to the screen as a whole
 
+I chose to use the minifb crate to handle display values, and I scaled the 64 x 32 pixel display by a factor of 10
+
 ![sprites](./imgs/Sprites.png)
 
 Sprites can be a max of 8 bits in width, and 15 bits in height.
@@ -96,6 +98,38 @@ Sprites get XOR'd onto the display, if this causes any pixels to be erased then 
 
 ![keyboard](./imgs/Keyboard.png)
 
+Here are the key mappings I used
+
+```rs
+match key {
+        Some(Key::Key1) => Some(0x1),
+        Some(Key::Key2) => Some(0x2),
+        Some(Key::Key3) => Some(0x3),
+        Some(Key::Key4) => Some(0xC),
+
+        Some(Key::Q) => Some(0x4),
+        Some(Key::W) => Some(0x5),
+        Some(Key::E) => Some(0x6),
+        Some(Key::R) => Some(0xD),
+
+        Some(Key::A) => Some(0x7),
+        Some(Key::S) => Some(0x8),
+        Some(Key::D) => Some(0x9),
+        Some(Key::F) => Some(0xE),
+
+        Some(Key::Z) => Some(0xA),
+        Some(Key::X) => Some(0x0),
+        Some(Key::C) => Some(0xB),
+        Some(Key::V) => Some(0xF),
+        _ => None,
+    }
+```
+## How to run
+
+Prerequisites: you will need rust installed, and I have only tested this on a Mac
+
+to run use `cargo run roms/{rom}` where rom is the name of the individual rom you want to run, and it must exist inside `./roms`.
+Ex: `cargo run roms/TETRIS` to run the TETRIS rom.
 ## Credits
 - http://mattmik.com/files/chip8/mastering/chip8.html
 
