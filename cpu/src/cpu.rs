@@ -1,8 +1,4 @@
 use crate::keyboard::Keyboard;
-use std::{
-    thread,
-    time::{Duration, Instant},
-};
 use crate::font::FONT_SET;
 use std::fs::File;
 use std::io::Read;
@@ -15,7 +11,6 @@ const OP_SIZE: u16 = 2;
 // constants
 const SCREEN_WIDTH: usize = 64;
 const SCREEN_HEIGHT: usize = 32;
-const EXECUTION_RATE: f32 = 0.06; // 60 hertz
 // first open memory location for loading programs/games
 const MEMORY_START_INDEX: usize = 0x200;
 
@@ -87,7 +82,7 @@ pub struct Cpu {
 
     // peripherals
     pub keyboard: Keyboard,
-    pub display: [[u8; SCREEN_WIDTH]; SCREEN_HEIGHT],
+    pub display: [[u32; SCREEN_WIDTH]; SCREEN_HEIGHT],
 
     // program stack
     stack: [u16; 16],
@@ -171,10 +166,6 @@ impl Cpu {
     }
 
     pub fn execute_cycle(&mut self) {
-        // tracking start time of cycle
-        let dur = Duration::from_secs_f32(EXECUTION_RATE);
-        let start = Instant::now();
-
         if !self.paused {
             // fetch instruction
             let opcode = self.read_word();
@@ -192,14 +183,6 @@ impl Cpu {
             self.decrement_timers();
         } else {
             self.detect_keyboard_change();
-        }
-
-        // calculate the time it took to execute the instruction
-        let runtime = start.elapsed();
-
-        // limit functions to 60 hertz
-        if let Some(remaining) = dur.checked_sub(runtime) {
-            thread::sleep(remaining);
         }
     }
 
@@ -475,6 +458,9 @@ impl Cpu {
         // get the sprite out of memory by borrowing a slice of memory from i to i + n
         let sprite = &self.memory[self.i as usize..(self.i + n as u16) as usize];
 
+        let vx = self.v[x] as usize;
+        let vy = self.v[y] as usize;
+
         // traverse ever memory address (each represents a row)
         for j in 0..sprite.len() {
             let row = &sprite[j];
@@ -482,21 +468,21 @@ impl Cpu {
             for i in 0..8 {
                 // starting with the left most bit, shift the bit all the way right
                 // determine if its a 1 or 0
-                let new_pixel_value = row >> (7 - i) & 0x01;
-
+                let new_pixel_value: u32 = (row >> (7 - i) & 0x01 ).into();
+                
                 // determine the coordinates for the pixel
                 // and check if it needs to wrap around the display
-                let x_target = if x + i > SCREEN_WIDTH { i } else { x + i };
-                let y_target = if y + i > SCREEN_HEIGHT { i } else { y + i };
+                let x_target = if vx + i >= SCREEN_WIDTH { i } else { vx + i };
+                let y_target = if vy + i >= SCREEN_HEIGHT { i } else { vy + i };
 
                 // detect collision
-                if (self.display[x_target][y_target] & new_pixel_value) == 1 {
+                if (self.display[y_target][x_target] & new_pixel_value) == 1 {
                     self.v[0xF] = 1
                 };
 
                 // draw value on the display (XOR the current value and the new value)
-                self.display[x_target][y_target] =
-                    self.display[x_target][y_target] ^ new_pixel_value;
+                self.display[y_target][x_target] =
+                    self.display[y_target][x_target] ^ new_pixel_value;
             }
         }
 

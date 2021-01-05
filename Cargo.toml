@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 termion = "1"
+minifb = "0.13"
 cpu = { path = "./cpu"}
 
 [workspace]
