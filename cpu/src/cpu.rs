@@ -274,7 +274,7 @@ impl Cpu {
 
     // SYS
     fn op_00e0(&mut self) -> ProgramCounterChange {
-        println!("attempted to use 0nnn, this is ignored on modern interpreters");
+        self.display = [[0; SCREEN_WIDTH]; SCREEN_HEIGHT];
         ProgramCounterChange::Next
     }
 
@@ -499,6 +499,7 @@ impl Cpu {
     // SKP Vx
     fn op_ex9e(&mut self, x: usize) -> ProgramCounterChange {
         if self.keyboard.key_is_pressed(self.v[x]) {
+            //self.keyboard.un_press_key(self.v[x]);
             return ProgramCounterChange::Skip;
         };
         ProgramCounterChange::Next
@@ -509,6 +510,7 @@ impl Cpu {
         if !self.keyboard.key_is_pressed(self.v[x]) {
             return ProgramCounterChange::Skip;
         };
+        //self.keyboard.un_press_key(self.v[x]);
         ProgramCounterChange::Next
     }
 
@@ -562,7 +564,7 @@ impl Cpu {
 
     // LD [I], Vx
     fn op_fx55(&mut self, x: usize) -> ProgramCounterChange {
-        for i in 0..(x - 1) {
+        for i in 0..x + 1 {
             self.memory[self.i as usize + i] = self.v[i];
         };
         ProgramCounterChange::Next
@@ -570,7 +572,7 @@ impl Cpu {
 
     // LD Vx, [I]
     fn op_fx65(&mut self, x: usize) -> ProgramCounterChange {
-        for i in 0..(x - 1) {
+        for i in 0..x + 1 {
             self.v[i] = self.memory[self.i as usize + i];
         };
         ProgramCounterChange::Next

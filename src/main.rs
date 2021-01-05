@@ -3,10 +3,9 @@ use minifb::{Key, KeyRepeat, Window, WindowOptions};
 // I hate this, but I would have to restructure the workspace into a lib crate ¯\_(ツ)_/¯
 use cpu::cpu::Cpu;
 use std::env;
-// use std::{
-//     thread,
-//     time::{Duration, Instant},
-// };
+use std::{
+    time::{Duration, Instant},
+};
 
 //const EXECUTION_RATE: f32 = 0.06; // 60 hertz
 
@@ -62,43 +61,55 @@ fn main() {
     //println!("{} rom loaded", rom);
     cpu.load_game(rom);
     
-    // begin executing instructions and updating the display
-    loop {
-        cpu.execute_cycle();
+    let mut last_key_update_time = Instant::now();
+    let mut last_instruction_run_time = Instant::now();
+    let mut last_display_time = Instant::now();
 
-        for y in 0..height {
-            let y_coord = y / 10;
-            for x in 0..width {
-                let x_cord = x / 10;
-                let pixel = cpu.display[y_coord][x_cord];
-                let color_pixel = match pixel {
-                    0 => 0x0,
-                    1 => 0xffffff,
-                    _ => {println!("pixel value {}", pixel); 0x0},
-                };
-                buffer[(y * width) + x] = color_pixel;
+    // begin executing instructions and updating the display
+    while window.is_open() && !window.is_key_down(Key::Escape) {
+        let keys_pressed = window.get_keys_pressed(KeyRepeat::Yes);
+        let key = match keys_pressed {
+            Some(keys) => if !keys.is_empty() {
+                Some(keys[0])
+            } else {
+                None
+            },
+            None => None,
+        };
+
+        let chip8_key = get_chip8_keycode_for(key);
+        if chip8_key.is_some() || Instant::now() - last_key_update_time >= Duration::from_millis(200)
+        {
+            cpu.keyboard.reset();
+            last_key_update_time = Instant::now();
+            if let Some(key) = chip8_key {
+                cpu.keyboard.press_key(key)
             }
         }
 
-        let _ = window.update_with_buffer(&buffer);
-        //TODO: detect keypress events, map to Chip-8 keyboard
-        // update the chips keyboard state
+        if Instant::now() - last_instruction_run_time > Duration::from_millis(2) {
+            cpu.execute_cycle();
+            last_instruction_run_time = Instant::now();
+        }
+
+        if Instant::now() - last_display_time > Duration::from_millis(10) {
+            for y in 0..height {
+                let y_coord = y / 10;
+                for x in 0..width {
+                    let x_cord = x / 10;
+                    let pixel = cpu.display[y_coord][x_cord];
+                    let color_pixel = match pixel {
+                        0 => 0x0,
+                        1 => 0xffffff,
+                        _ => {println!("pixel value {}", pixel); 0x0},
+                    };
+                    buffer[(y * width) + x] = color_pixel;
+                }
+            }
+    
+            let _ = window.update_with_buffer(&buffer);
+            last_display_time = Instant::now();
+        }
+        
     }
 }
-
-// convert a keypress into a chip 8 key value if possible
-// fn char_to_key(key: char) -> Option<u8> {
-//     if let Some(x) = key.to_digit(10) {
-//         if x <= 16 {
-//             return Some(x as u8)
-//         }
-//     }
-//     None
-// }
-
-
-// display unicode values
-// empty pixel
-// ▒
-// full pixel
-// █
